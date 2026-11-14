@@ -21,9 +21,9 @@ export default function LoginForm(){
     <form className='login-form'>
         <h3>Logga in</h3>
         <label>Användarnamn:</label>
-        <input id="username" type="text" placeholder="Ange användarnamn"></input>
+        <input value={username} id='username' type="text" placeholder="Ange användarnamn"></input>
         <label>Lösenord</label>
-        <input id="password" type="password" placeholder="Ange lösenord"></input>
+        <input value={password} id='password' type="password" placeholder="Ange lösenord"></input>
         <button onSubmit={redirectToView} className='login-button'>Logga in</button>
     </form>
     </div>
