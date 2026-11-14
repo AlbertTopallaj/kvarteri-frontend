@@ -2,7 +2,7 @@ import './LoginForm.css'
 
 export default function LoginForm(){
     return <>
-    <form>
+    <form className='login-form'>
         <h3>Logga in</h3>
         <p>Användarnamn:</p>
         <input placeholder="Ange användarnamn"></input>
