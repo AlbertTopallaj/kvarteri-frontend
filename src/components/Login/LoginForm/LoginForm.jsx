@@ -1,16 +1,19 @@
 import { useState } from 'react';
 import './LoginForm.css'
+import { Link } from 'react-router';
 
 export default function LoginForm(){
 
-    const [username, setUsername] = useState("test");
-    const [password, setPassword] = useState("test");
+    const [username, setUsername] = useState("");
+    const [password, setPassword] = useState("");
 
     function redirectToView(){
         if(!username && !password){
-            Alert.Alert("Saknas grejer");
-            
+            alert("Saknas grejer");
         }
+
+        setUsername(username);
+        setPassword(password);
     }
 
     return <>
@@ -21,7 +24,7 @@ export default function LoginForm(){
         <input id="username" type="text" placeholder="Ange användarnamn"></input>
         <p>Lösenord</p>
         <input id="password" type="password" placeholder="Ange lösenord"></input>
-        <button className='login-button'>Logga in</button>
+        <button onSubmit={redirectToView} className='login-button'>Logga in</button>
     </form>
     </div>
     </>
