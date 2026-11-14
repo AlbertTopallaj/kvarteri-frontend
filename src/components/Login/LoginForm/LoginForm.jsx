@@ -8,6 +8,7 @@ export default function LoginForm(){
         <input placeholder="Ange användarnamn"></input>
         <p>Lösenord</p>
         <input placeholder="Ange lösenord"></input>
+        <button className='login-button'>Logga in</button>
     </form>
     </>
 }
