@@ -7,8 +7,11 @@ export default function LoginForm(){
     const [password, setPassword] = useState("test");
 
     function redirectToView(){
+        if(!username && !password){
+            Alert.Alert("Saknas grejer");
+            
+        }
     }
-
 
     return <>
     <div className='login-wrapper'>
