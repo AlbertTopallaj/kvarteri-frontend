@@ -8,6 +8,7 @@ function App() {
   
     <Routes>
       <Route path="/" component={<Login/>}></Route>
+      <Route path="/resident" component={<ResidentView/>}></Route>
     </Routes>
     </BrowserRouter>
   )
