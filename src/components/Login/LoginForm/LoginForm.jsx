@@ -8,7 +8,7 @@ export default function LoginForm(){
     const [password, setPassword] = useState("");
 
     function redirectToView(){
-        if(!username && !password){
+        if(!username || !password){
             alert("Saknas grejer");
         }
 
