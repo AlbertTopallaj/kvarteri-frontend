@@ -12,6 +12,7 @@ export default function LoginForm(){
 
         if(!username || !password){
             alert("Saknas grejer");
+            return;
         }
 
         setUsername(username);
