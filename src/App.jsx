@@ -4,16 +4,17 @@ import './App.css'
 
 function App() {
 
-  return <>
+  return ( 
+  <>
 
     <BrowserRouter>
   
     <Routes>
-      <Route index={true} path={"/"} element={<Login/>} />
       <Route path="/resident" element={<ResidentView/>} />
     </Routes>
     </BrowserRouter>
     </>
+    )
   }
 
 export default App
