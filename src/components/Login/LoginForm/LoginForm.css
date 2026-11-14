@@ -10,6 +10,12 @@
     text-align: center;
 }
 
+.login-form form {
+    padding: 2rem;
+    box-shadow: 0px 4px 10px #e7e7e7;
+    border-radius: 8px;
+}
+
 .login-button {
     margin: 2rem;
     padding: 0.5rem;
