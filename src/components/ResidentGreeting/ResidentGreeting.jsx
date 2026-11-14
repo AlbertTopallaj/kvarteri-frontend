@@ -1,3 +1,5 @@
+import './ResidentGreeting.css'
+
 export default function ResidentGreeting(){
     return <>
     <div className="greeting-container">
