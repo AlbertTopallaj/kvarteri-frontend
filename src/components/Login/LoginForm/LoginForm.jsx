@@ -14,18 +14,15 @@ export default function LoginForm(){
             alert("Saknas grejer");
             return;
         }
-
-        setUsername(username);
-        setPassword(password);
     }
 
     return <>
     <div className='login-wrapper'>
     <form className='login-form'>
         <h3>Logga in</h3>
-        <p>Användarnamn:</p>
+        <label>Användarnamn:</label>
         <input id="username" type="text" placeholder="Ange användarnamn"></input>
-        <p>Lösenord</p>
+        <label>Lösenord</label>
         <input id="password" type="password" placeholder="Ange lösenord"></input>
         <button onSubmit={redirectToView} className='login-button'>Logga in</button>
     </form>
