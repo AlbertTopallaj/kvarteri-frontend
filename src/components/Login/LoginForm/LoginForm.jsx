@@ -1,6 +1,5 @@
 import { useState } from 'react';
 import './LoginForm.css'
-import { Link } from 'react-router';
 
 export default function LoginForm(){
 
@@ -11,7 +10,7 @@ export default function LoginForm(){
         e.preventDefault();
 
         if(!username || !password){
-            alert("Saknas grejer");
+            alert("Det saknas uppgifter för att slutföra inloggningen.");
             return;
         }
     }
