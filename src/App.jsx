@@ -7,11 +7,11 @@ function App() {
     <BrowserRouter>
   
     <Routes>
-      <Route path="/" component={<Login/>}></Route>
-      <Route path="/resident" component={<ResidentView/>}></Route>
+      <Route path="/" element={<Login/>}></Route>
+      <Route path="/resident" element={<ResidentView/>}></Route>
     </Routes>
     </BrowserRouter>
-  )
+  );
 }
 
 export default App
