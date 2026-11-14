@@ -1,6 +1,5 @@
 import { BrowserRouter, Routes } from 'react-router';
 import './App.css'
-import ResidentGreeting from './components/ResidentGreeting/ResidentGreeting';
 
 function App() {
 
@@ -8,7 +7,7 @@ function App() {
     <BrowserRouter>
   
     <Routes>
-      
+      <Route path="/" component={<Login/>}></Route>
     </Routes>
     </BrowserRouter>
   )
