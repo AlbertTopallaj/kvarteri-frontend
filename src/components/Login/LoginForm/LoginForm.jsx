@@ -7,7 +7,9 @@ export default function LoginForm(){
     const [username, setUsername] = useState("");
     const [password, setPassword] = useState("");
 
-    function redirectToView(){
+    function redirectToView(e){
+        e.preventDefault();
+
         if(!username || !password){
             alert("Saknas grejer");
         }
