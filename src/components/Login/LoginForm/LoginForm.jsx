@@ -21,7 +21,7 @@ export default function LoginForm(){
     <form className='login-form'>
         <h3>Logga in</h3>
         <label>Användarnamn:</label>
-        <input value={username} id='username' type="text" placeholder="Ange användarnamn"></input>
+        <input value={username} id='username' type="text" placeholder="Ange användarnamn" onChange={(e) => setUsername(e.target.value)}></input>
         <label>Lösenord</label>
         <input value={password} id='password' type="password" placeholder="Ange lösenord"></input>
         <button onSubmit={redirectToView} className='login-button'>Logga in</button>
