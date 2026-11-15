@@ -1,8 +1,8 @@
 export default function ViewCard(){
     return <>
-    <div>
-        <div>
-            
+    <div className="wrapper">
+        <div className="content">
+
         </div>
     </div>
     </>
