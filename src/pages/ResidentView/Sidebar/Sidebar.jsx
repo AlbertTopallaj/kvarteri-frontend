@@ -1,5 +1,5 @@
 import './Sidebar.css'
-import { FileExclamationPoint, HouseHeart, MessagesCircle, Settings, SquareText } from 'lucide-react'
+import { FileExclamationPoint, HouseHeart, LogOut, MessagesCircle, Settings, SquareText } from 'lucide-react'
 
 export default function Sidebar(){
     return <>
