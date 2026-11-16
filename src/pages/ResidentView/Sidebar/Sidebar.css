@@ -5,3 +5,9 @@
     box-shadow: 2px 0 8px #e0e0e0;
     padding: 24px 16px;
 }
+
+.span-sidebar {
+    font-size: 20px;
+    letter-spacing: 5px;
+    color: #cccccc;
+}
