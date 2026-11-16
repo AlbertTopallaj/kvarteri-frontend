@@ -1,1 +1,5 @@
-export default function SettingsView(){}
+export default function SettingsView(){
+    return <>
+    
+    </>
+}
