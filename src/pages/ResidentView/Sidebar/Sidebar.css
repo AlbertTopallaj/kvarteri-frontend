@@ -2,10 +2,13 @@
     width: 500px;
     background-color: #ffffff;
     height: 100vh;
-    box-shadow: 2px 0 8px #e0e0e0;
+    box-shadow: 2px 0 8px #8d6f6f;
     padding: 24px 16px;
     display: flex;
     flex-direction: column;
+
+    position: fixed;
+    left: 0;
 }
 
 .span-sidebar {
@@ -15,10 +18,10 @@
 }
 
 .sidebar-item {
-    margin-top: 10rem;
+    margin-top: 1rem;
 }
 
 .sidebar-bottom {
-    margin-top: 2rem;
+    margin-top: 37rem;  
     background-color: red;
 }
