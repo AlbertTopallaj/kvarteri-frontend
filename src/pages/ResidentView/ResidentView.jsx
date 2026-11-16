@@ -10,7 +10,6 @@ export default function ResidentView(){
     <Sidebar/>
     <div className="card-grid">
     <ViewCard/>
-    <ViewCard/>
     </div>
     </div>
     </>

@@ -4,8 +4,8 @@ export default function ViewCard(){
     return <>
     <div className="wrapper">
         <div className="content">
-            <span>Antal ärenden</span>
-            <strong>24</strong>
+            <span>Mina ärenden</span>
+            <strong>0</strong>
         </div>
     </div>
     </>
