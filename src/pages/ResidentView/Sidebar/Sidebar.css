@@ -23,5 +23,6 @@
 
 .sidebar-bottom {
     margin-top: 37rem;  
-    background-color: red;
+    border: 2px solid #e7e7e7;
+    padding: 10px;
 }
