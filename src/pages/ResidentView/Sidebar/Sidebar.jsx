@@ -1,5 +1,5 @@
 import './Sidebar.css'
-import { FileExclamationPoint, HouseHeart, MessagesCircle, SquareText } from 'lucide-react'
+import { FileExclamationPoint, HouseHeart, MessagesCircle, Settings, SquareText } from 'lucide-react'
 
 export default function Sidebar(){
     return <>
@@ -19,7 +19,7 @@ export default function Sidebar(){
         </div>
         <div className='sidebar-bottom'>
             <div className='sidebar-bottom-item'>
-                Inställningar
+                <Settings/>
             </div>
             <div className='sidebar-bottom-item'>
                 Logga ut
