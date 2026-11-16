@@ -16,6 +16,14 @@ export default function Sidebar(){
         <div className='sidebar-item'>
             <span>Chatt</span>
         </div>
+        <div className='sidebar-bottom'>
+            <div className='sidebar-bottom-item'>
+                Inställningar
+            </div>
+            <div className='sidebar-bottom-item'>
+                Logga ut
+            </div>
+        </div>
     </aside>
     </>
 }
