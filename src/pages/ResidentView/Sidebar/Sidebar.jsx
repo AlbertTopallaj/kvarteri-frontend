@@ -1,6 +1,6 @@
 export default function Sidebar(){
     return <>
-    <aside>
+    <aside className="sidebar">
         <span>MENYN</span>
     </aside>
     </>
