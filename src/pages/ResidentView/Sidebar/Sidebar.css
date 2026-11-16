@@ -11,3 +11,8 @@
     letter-spacing: 5px;
     color: #cccccc;
 }
+
+.sidebar-item {
+    margin-top: 10rem;
+    margin-bottom: 1.5rem;
+}
