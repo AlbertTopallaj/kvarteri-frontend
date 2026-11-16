@@ -22,7 +22,7 @@ export default function Sidebar(){
                 <Settings/>
             </div>
             <div className='sidebar-bottom-item'>
-                Logga ut
+                <LogOut />
             </div>
         </div>
     </aside>
