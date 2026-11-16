@@ -1,3 +1,4 @@
+import { Link } from 'react-router';
 import './Sidebar.css'
 import { FileExclamationPoint, HouseHeart, LogOut, MessagesCircle, Settings, SquareText } from 'lucide-react'
 
@@ -19,7 +20,9 @@ export default function Sidebar(){
         </div>
         <div className='sidebar-bottom'>
             <div className='sidebar-bottom-item'>
+                <Link to="/settings">
                 <Settings/>
+                </Link>
             </div>
             <div className='sidebar-bottom-item'>
                 <LogOut />
