@@ -13,6 +13,9 @@ export default function Sidebar(){
         <div className='sidebar-item'>
             <span>Incidentrapporter</span>
         </div>
+        <div className='sidebar-item'>
+            <span>Chatt</span>
+        </div>
     </aside>
     </>
 }
