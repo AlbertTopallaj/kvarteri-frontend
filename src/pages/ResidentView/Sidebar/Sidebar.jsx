@@ -25,7 +25,9 @@ export default function Sidebar(){
                 </Link>
             </div>
             <div className='sidebar-bottom-item'>
+                <Link to="/">
                 <LogOut />
+                </Link>
             </div>
         </div>
     </aside>
