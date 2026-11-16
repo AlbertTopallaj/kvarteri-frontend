@@ -6,6 +6,7 @@ export default function ResidentView(){
     <ResidentGreeting></ResidentGreeting>
     <div className="card-grid">
     <ViewCard/>
+    <ViewCard/>
     </div>
     </>
 }
