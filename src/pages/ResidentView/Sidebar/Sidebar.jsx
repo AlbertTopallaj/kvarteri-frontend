@@ -1,15 +1,15 @@
 import './Sidebar.css'
-import { HouseHeart } from 'lucide-react'
+import { HouseHeart, SquareText } from 'lucide-react'
 
 export default function Sidebar(){
     return <>
     <aside className="sidebar">
         <span className='span-sidebar'>MENYN</span>
         <div className='sidebar-item'>
-            <HouseHeart/><span>Hem</span>
+           <HouseHeart/>
         </div>
         <div className='sidebar-item'>
-            <span>Ärenden</span>
+            <SquareText/>
         </div>
         <div className='sidebar-item'>
             <span>Incidentrapporter</span>
