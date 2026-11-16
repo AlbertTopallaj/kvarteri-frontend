@@ -1,5 +1,5 @@
 import { BrowserRouter, Routes, Route } from 'react-router';
-import ResidentView from './pages/ResidentView';
+import ResidentView from './pages/ResidentView/ResidentView';
 import './App.css'
 import Login from './pages/Login';
 

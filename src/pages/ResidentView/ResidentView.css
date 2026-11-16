@@ -3,4 +3,11 @@
     grid-template-columns: repeat(3, 1fr);
     gap: 24px;
     padding: 32px;
+    flex: 1;
+}
+
+.layout {
+    display: flex;
+    gap: 32px;
+    padding: 32px;
 }
