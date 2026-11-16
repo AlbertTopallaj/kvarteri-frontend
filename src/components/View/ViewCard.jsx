@@ -5,7 +5,7 @@ export default function ViewCard(){
     <div className="wrapper">
         <div className="content">
             <span className='span-content'>Mina ärenden</span>
-            <strong>0</strong>
+            <span>0</span>
         </div>
     </div>
     </>
