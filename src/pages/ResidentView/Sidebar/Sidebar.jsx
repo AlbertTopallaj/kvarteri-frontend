@@ -1,5 +1,5 @@
 import './Sidebar.css'
-import { FileExclamationPoint, HouseHeart, SquareText } from 'lucide-react'
+import { FileExclamationPoint, HouseHeart, MessagesCircle, SquareText } from 'lucide-react'
 
 export default function Sidebar(){
     return <>
@@ -15,7 +15,7 @@ export default function Sidebar(){
             <FileExclamationPoint/>
         </div>
         <div className='sidebar-item'>
-            <span>Chatt</span>
+            <MessagesCircle/>
         </div>
         <div className='sidebar-bottom'>
             <div className='sidebar-bottom-item'>
