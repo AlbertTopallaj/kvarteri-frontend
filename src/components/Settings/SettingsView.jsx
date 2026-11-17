@@ -83,7 +83,7 @@ export default function SettingsView(){
             <section className="settings-card danger-zone">
                 <div className="danger-title">
                     <TriangleAlert size={18}/>
-                    <h2>Danger zone</h2>
+                    <h2>Farlig zon</h2>
                 </div>
 
                 <div className="danger-row">
