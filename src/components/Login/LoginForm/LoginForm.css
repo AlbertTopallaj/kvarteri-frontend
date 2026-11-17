@@ -23,6 +23,12 @@
     font-weight: 500;
 }
 
+.login-form p {
+    margin: 0 0 8px;
+    font-size: 14px;
+    color: #6b7280;
+}
+
 .login-button {
     margin: 2rem;
     padding: 0.5rem;
