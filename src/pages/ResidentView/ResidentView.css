@@ -1,7 +1,7 @@
 .resident-layout {
     display: flex;
     min-height: 100vh;
-    background-color: #f9fafb;
+    background-color: var(--bg);
     padding-left: 72px; /* sidebar width */
 }
 
@@ -32,6 +32,7 @@
 .topbar {
     display: flex;
     justify-content: flex-end;
+    gap: 10px;
     margin-bottom: -16px;
 }
 

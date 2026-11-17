@@ -1,6 +1,7 @@
 import { createContext, useContext, useEffect, useMemo, useRef, useState } from 'react';
 import { useToast } from '../components/Toast/ToastProvider';
 import { STATUS_LABELS } from '../utils/roles';
+import { playPing } from '../utils/sound';
 
 /*
  * Klientbaserad datalagring i väntan på ett riktigt API.
@@ -98,10 +99,9 @@ export function AppProvider({ children }){
             }
             const me = next.users.find(u => u.id === sessionRef.current);
             const known = new Set(dataRef.current.notifications.map(n => n.id));
-            next.notifications
-                .filter(n => !known.has(n.id) && isVisibleTo(n, me))
-                .slice(0, 3)
-                .forEach(n => toast.info(n.text));
+            const fresh = next.notifications.filter(n => !known.has(n.id) && isVisibleTo(n, me));
+            if (fresh.length > 0) playPing();
+            fresh.slice(0, 3).forEach(n => toast.info(n.text));
             dataRef.current = next;
             setData(next);
         }

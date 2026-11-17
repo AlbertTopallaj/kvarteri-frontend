@@ -1,6 +1,6 @@
 .staff-shell {
     min-height: 100vh;
-    background: #f9fafb;
+    background: var(--bg);
 }
 
 .staff-header {
@@ -10,8 +10,8 @@
     flex-wrap: wrap;
     gap: 12px;
     padding: 12px 24px;
-    background: #ffffff;
-    border-bottom: 1px solid #e5e7eb;
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
 }
 
 .staff-brand {
@@ -19,14 +19,14 @@
     align-items: center;
     gap: 10px;
     font-size: 16px;
-    color: #111827;
+    color: var(--text);
 }
 
 .staff-role {
     padding: 3px 10px;
     border-radius: 999px;
-    background: #111827;
-    color: #ffffff;
+    background: var(--accent);
+    color: var(--on-accent);
     font-size: 12px;
     font-weight: 500;
 }
@@ -39,7 +39,7 @@
 
 .staff-user {
     font-size: 14px;
-    color: #6b7280;
+    color: var(--muted);
 }
 
 .staff-icon-btn {
@@ -49,14 +49,14 @@
     width: 40px;
     height: 40px;
     border-radius: 10px;
-    border: 1px solid #e5e7eb;
-    background: #ffffff;
-    color: #374151;
+    border: 1px solid var(--border);
+    background: var(--surface);
+    color: var(--text-2);
     transition: background-color 0.15s;
 }
 
 .staff-icon-btn:hover {
-    background: #f3f4f6;
+    background: var(--subtle);
 }
 
 .staff-main {

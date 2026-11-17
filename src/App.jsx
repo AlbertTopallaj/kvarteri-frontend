@@ -1,6 +1,7 @@
 import { BrowserRouter, Routes, Route } from 'react-router';
 import { ToastProvider } from './components/Toast/ToastProvider';
 import { AppProvider } from './context/AppContext';
+import { ThemeProvider } from './context/ThemeContext';
 import RequireRole from './components/RequireRole/RequireRole';
 import ResidentLayout from './pages/ResidentView/ResidentLayout';
 import ResidentView from './pages/ResidentView/ResidentView';
@@ -18,6 +19,7 @@ function App() {
 
   return (
   <>
+    <ThemeProvider>
     <ToastProvider>
     <AppProvider>
     <BrowserRouter>
@@ -51,6 +53,7 @@ function App() {
     </BrowserRouter>
     </AppProvider>
     </ToastProvider>
+    </ThemeProvider>
   </>
   )
 }

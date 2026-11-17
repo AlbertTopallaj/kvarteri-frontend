@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Navigate, useNavigate } from 'react-router';
 import { useApp } from '../../../context/AppContext';
 import { useToast } from '../../Toast/ToastProvider';
+import ThemeToggle from '../../ThemeToggle/ThemeToggle';
 import { ROLE_HOME } from '../../../utils/roles';
 import './LoginForm.css'
 
@@ -30,6 +31,7 @@ export default function LoginForm(){
 
     return <>
     <div className='login-wrapper'>
+    <div className='login-theme'><ThemeToggle/></div>
     <form className='login-form' onSubmit={redirectToView}>
         <h3>Logga in</h3>
         <label>Användarnamn:</label>

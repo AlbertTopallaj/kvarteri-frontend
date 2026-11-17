@@ -7,10 +7,10 @@
 .greeting {
     font-size: 28px;
     font-weight: 600;
-    color: #111827;
+    color: var(--text);
 }
 
 .greeting-sub {
     font-size: 15px;
-    color: #6b7280;
+    color: var(--muted);
 }

@@ -1,6 +1,7 @@
 import { Link } from 'react-router';
 import { LogOut, Settings } from 'lucide-react';
 import NotificationBell from '../NotificationBell/NotificationBell';
+import ThemeToggle from '../ThemeToggle/ThemeToggle';
 import { useApp } from '../../context/AppContext';
 import { ROLE_LABELS } from '../../utils/roles';
 import './StaffLayout.css'
@@ -18,6 +19,7 @@ export default function StaffLayout({ children }){
             </div>
             <div className="staff-actions">
                 <span className="staff-user">{user.name}</span>
+                <ThemeToggle/>
                 <NotificationBell/>
                 <Link to="/settings" className="staff-icon-btn" aria-label="Inställningar" title="Inställningar">
                     <Settings size={18}/>
