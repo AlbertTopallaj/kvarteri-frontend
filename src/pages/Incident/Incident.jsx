@@ -1,27 +1,24 @@
 import { useState } from 'react';
+import { useApp } from '../../context/AppContext';
+import { STATUS_LABELS, formatDate } from '../../utils/roles';
 import '../../styles/ResidentPages.css'
 import './Incident.css'
 
 const CATEGORIES = ['El', 'Vatten och avlopp', 'Värme', 'Hiss', 'Lås och dörrar', 'Annat'];
 
 export default function Incident(){
+    const { user, errands, addErrand } = useApp();
     const [category, setCategory] = useState(CATEGORIES[0]);
     const [location, setLocation] = useState('');
     const [description, setDescription] = useState('');
-    const [reports, setReports] = useState([
-        { id: 1, category: 'Hiss', location: 'Trapphus B', status: 'progress', date: '2026-11-10' },
-    ]);
-    const [sent, setSent] = useState(false);
+
+    const reports = errands.filter(e => e.userId === user.id && e.kind === 'incident');
 
     function submit(e){
         e.preventDefault();
-        setReports(prev => [
-            { id: Date.now(), category, location, status: 'pending', date: new Date().toISOString().slice(0, 10) },
-            ...prev,
-        ]);
+        addErrand({ title: `${category}: ${location}`, description, kind: 'incident' });
         setLocation('');
         setDescription('');
-        setSent(true);
     }
 
     return <>
@@ -56,12 +53,11 @@ export default function Incident(){
                 <textarea
                     id="description"
                     value={description}
-                    onChange={e => { setDescription(e.target.value); setSent(false); }}
+                    onChange={e => setDescription(e.target.value)}
                     placeholder="Beskriv felet så noggrant du kan"
                     required
                 />
             </div>
-            {sent && <p className="success-note">Tack! Din felanmälan är skickad.</p>}
             <div>
                 <button type="submit" className="btn">Skicka felanmälan</button>
             </div>
@@ -70,17 +66,20 @@ export default function Incident(){
 
     <section className="panel">
         <h2>Tidigare anmälningar</h2>
-        <ul className="row-list">
-            {reports.map(r => (
-                <li key={r.id}>
-                    <div>
-                        <div className="row-title">{r.category}</div>
-                        <div className="row-meta">{r.location} · {r.date}</div>
-                    </div>
-                    <span className={`badge ${r.status}`}>{r.status === 'pending' ? 'Mottagen' : 'Pågår'}</span>
-                </li>
-            ))}
-        </ul>
+        {reports.length === 0
+            ? <p className="empty-state">Du har inte gjort några felanmälningar.</p>
+            : <ul className="row-list">
+                {reports.map(r => (
+                    <li key={r.id}>
+                        <div>
+                            <div className="row-title">{r.title}</div>
+                            <div className="row-meta">{formatDate(r.createdAt)}</div>
+                        </div>
+                        <span className={`badge ${r.status}`}>{STATUS_LABELS[r.status]}</span>
+                    </li>
+                ))}
+            </ul>
+        }
     </section>
     </>
 }

@@ -1,12 +1,12 @@
-import { useState } from 'react';
+import { useApp } from '../../context/AppContext';
 import './ResidentGreeting.css'
 
 export default function ResidentGreeting(){
-    const [username, setUsername] = useState("Albert");
+    const { user } = useApp();
 
     return <>
     <header className="greeting-container">
-        <h1 className="greeting">Välkommen, {username}</h1>
+        <h1 className="greeting">Välkommen, {user.name}</h1>
         <p className="greeting-sub">Här är en översikt över ditt boende.</p>
     </header>
     </>

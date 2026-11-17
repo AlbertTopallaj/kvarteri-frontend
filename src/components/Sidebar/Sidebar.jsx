@@ -1,4 +1,5 @@
 import { Link, NavLink } from 'react-router';
+import { useApp } from '../../context/AppContext';
 import './Sidebar.css'
 import { CalendarDays, FileExclamationPoint, HouseHeart, LogOut, MessagesCircle, Settings, SquareText } from 'lucide-react'
 
@@ -11,6 +12,7 @@ const navItems = [
 ];
 
 export default function Sidebar(){
+    const { logout } = useApp();
     return <>
     <aside className="sidebar">
         <span className='span-sidebar'>MENY</span>
@@ -25,7 +27,7 @@ export default function Sidebar(){
             <Link to="/settings" className='sidebar-item' title='Inställningar' aria-label='Inställningar'>
                 <Settings size={20}/>
             </Link>
-            <Link to="/" className='sidebar-item' title='Logga ut' aria-label='Logga ut'>
+            <Link to="/" className='sidebar-item' title='Logga ut' aria-label='Logga ut' onClick={logout}>
                 <LogOut size={20}/>
             </Link>
         </div>

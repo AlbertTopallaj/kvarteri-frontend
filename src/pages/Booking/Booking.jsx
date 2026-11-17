@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import '../../styles/ResidentPages.css'
+import { useToast } from '../../components/Toast/ToastProvider';
 import './Booking.css'
 
 const TYPES = {
@@ -20,6 +21,7 @@ function nextDays(count){
 }
 
 export default function Booking(){
+    const toast = useToast();
     const days = nextDays(7);
     const [type, setType] = useState('laundry');
     const [day, setDay] = useState(days[0].key);
@@ -36,7 +38,9 @@ export default function Booking(){
 
     function book(){
         const dayLabel = days.find(d => d.key === day).label;
-        setConfirmation(`${current.label} bokad ${dayLabel}, ${slot}.`);
+        const message = `${current.label} bokad ${dayLabel}, ${slot}.`;
+        setConfirmation(message);
+        toast.success(message);
         setSlot(null);
     }
 

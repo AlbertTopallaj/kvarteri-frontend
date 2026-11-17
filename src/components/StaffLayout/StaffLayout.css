@@ -1,0 +1,78 @@
+.staff-shell {
+    min-height: 100vh;
+    background: #f9fafb;
+}
+
+.staff-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 12px;
+    padding: 12px 24px;
+    background: #ffffff;
+    border-bottom: 1px solid #e5e7eb;
+}
+
+.staff-brand {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 16px;
+    color: #111827;
+}
+
+.staff-role {
+    padding: 3px 10px;
+    border-radius: 999px;
+    background: #111827;
+    color: #ffffff;
+    font-size: 12px;
+    font-weight: 500;
+}
+
+.staff-actions {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.staff-user {
+    font-size: 14px;
+    color: #6b7280;
+}
+
+.staff-icon-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    border-radius: 10px;
+    border: 1px solid #e5e7eb;
+    background: #ffffff;
+    color: #374151;
+    transition: background-color 0.15s;
+}
+
+.staff-icon-btn:hover {
+    background: #f3f4f6;
+}
+
+.staff-main {
+    display: flex;
+    flex-direction: column;
+    gap: 28px;
+    max-width: 960px;
+    margin: 0 auto;
+    padding: 40px 24px;
+}
+
+@media (max-width: 640px) {
+    .staff-main {
+        padding: 24px 16px;
+    }
+    .staff-user {
+        display: none;
+    }
+}

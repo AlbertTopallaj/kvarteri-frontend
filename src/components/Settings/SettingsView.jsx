@@ -1,15 +1,18 @@
 import { useState } from 'react';
 import { Link } from 'react-router';
 import { ArrowLeft, LogOut, Trash2, TriangleAlert } from 'lucide-react';
+import { useApp } from '../../context/AppContext';
+import { ROLE_HOME } from '../../utils/roles';
 import './SettingsView.css'
 
 export default function SettingsView(){
+    const { user, logout, deleteAccount } = useApp();
     const [confirmingDelete, setConfirmingDelete] = useState(false);
 
     return <>
     <div className="settings-page">
         <div className="settings-container">
-            <Link to="/resident" className="settings-back">
+            <Link to={ROLE_HOME[user.role]} className="settings-back">
                 <ArrowLeft size={16}/>
                 Tillbaka
             </Link>
@@ -30,7 +33,7 @@ export default function SettingsView(){
                         <h3>Logga ut</h3>
                         <p>Du loggas ut från den här enheten.</p>
                     </div>
-                    <Link to="/" className="settings-button danger-outline">
+                    <Link to="/" className="settings-button danger-outline" onClick={logout}>
                         <LogOut size={16}/>
                         Logga ut
                     </Link>
@@ -64,7 +67,7 @@ export default function SettingsView(){
                             >
                                 Avbryt
                             </button>
-                            <button type="button" className="settings-button danger-solid">
+                            <button type="button" className="settings-button danger-solid" onClick={deleteAccount}>
                                 Ja, radera mitt konto
                             </button>
                         </div>

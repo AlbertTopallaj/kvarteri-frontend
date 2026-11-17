@@ -171,7 +171,8 @@
     background: #f3f4f6;
 }
 
-.chip.selected {
+.chip.selected,
+.chip.selected:hover:not(:disabled) {
     background: #111827;
     border-color: #111827;
     color: #ffffff;
@@ -191,4 +192,88 @@
     border: 1px solid #a7f3d0;
     color: #065f46;
     font-size: 14px;
+}
+
+/* Extra badge variants */
+.badge.rejected { background: #fee2e2; color: #991b1b; }
+.badge.role-admin { background: #ede9fe; color: #5b21b6; }
+.badge.role-board { background: #dbeafe; color: #1e40af; }
+.badge.role-resident { background: #f3f4f6; color: #374151; }
+
+/* Button variants */
+.btn.sm {
+    height: 32px;
+    padding: 0 12px;
+    font-size: 13px;
+}
+
+.btn.secondary {
+    background: #ffffff;
+    color: #374151;
+    border-color: #d1d5db;
+}
+
+.btn.danger {
+    background: #dc2626;
+    color: #ffffff;
+}
+
+.btn.icon-only {
+    padding: 0;
+    width: 32px;
+}
+
+/* Layout helpers */
+.stack {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.form-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+}
+
+.row-actions {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.review-item {
+    align-items: flex-start;
+}
+
+.review-body {
+    flex: 1;
+    min-width: 0;
+}
+
+.review-description {
+    margin-top: 8px;
+    font-size: 14px;
+    line-height: 1.5;
+    color: #374151;
+}
+
+.review-side {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 10px;
+}
+
+@media (max-width: 640px) {
+    .form-grid {
+        grid-template-columns: 1fr;
+    }
+    .review-item {
+        flex-direction: column;
+    }
+    .review-side {
+        align-items: flex-start;
+    }
 }
