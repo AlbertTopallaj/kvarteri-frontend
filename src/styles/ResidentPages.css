@@ -277,3 +277,23 @@
         align-items: flex-start;
     }
 }
+
+/* Parking admin */
+.price-input {
+    width: 90px;
+    height: 32px;
+    padding: 0 8px;
+    border-radius: 8px;
+    border: 1px solid var(--border-strong);
+    background: var(--bg);
+    font-size: 14px;
+}
+
+.spot-select {
+    height: 32px;
+    padding: 0 8px;
+    border-radius: 8px;
+    border: 1px solid var(--border-strong);
+    background: var(--bg);
+    font-size: 13px;
+}

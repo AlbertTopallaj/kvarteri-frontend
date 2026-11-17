@@ -142,6 +142,128 @@ function Announcements(){
     </>
 }
 
+function SpotRow({ spot }){
+    const { users, assignSpot, terminateSpot, setSpotPrice, removeSpot } = useApp();
+    const queue = spot.queue.filter(id => users.some(u => u.id === id));
+    const renter = users.find(u => u.id === spot.renterId);
+    const [choice, setChoice] = useState('');
+    const [price, setPrice] = useState(String(spot.price));
+    const selected = choice || queue[0] || '';
+    const others = users.filter(u => u.role !== 'admin' && !queue.includes(u.id));
+
+    function commitPrice(){
+        if (price === '' || Number(price) === spot.price){
+            setPrice(String(spot.price));
+            return;
+        }
+        setSpotPrice(spot.id, price);
+    }
+
+    return (
+        <li className="review-item">
+            <div className="review-body">
+                <div className="row-title">{spot.name}</div>
+                <div className="row-meta">
+                    {spot.renterId
+                        ? `Hyrs av ${renter ? `${renter.name}${renter.apartment ? ` (lgh ${renter.apartment})` : ''}` : 'borttagen användare'}`
+                        : 'Ledig'}
+                </div>
+                <div className="row-meta">
+                    Kö: {queue.length === 0
+                        ? 'ingen'
+                        : queue.map((id, i) => `${i + 1}. ${users.find(u => u.id === id).name}`).join(', ')}
+                </div>
+            </div>
+            <div className="review-side">
+                <div className="row-actions">
+                    <input
+                        type="number"
+                        min="0"
+                        className="price-input"
+                        aria-label={`Pris för ${spot.name}`}
+                        value={price}
+                        onChange={e => setPrice(e.target.value)}
+                        onBlur={commitPrice}
+                    />
+                    <span className="row-meta">kr/mån</span>
+                </div>
+                <div className="row-actions">
+                    {spot.renterId
+                        ? <button type="button" className="btn sm danger" onClick={() => terminateSpot(spot.id)}>Säg upp</button>
+                        : <>
+                            <select className="spot-select" aria-label={`Hyresgäst för ${spot.name}`} value={selected} onChange={e => setChoice(e.target.value)}>
+                                <option value="">Välj hyresgäst</option>
+                                {queue.map((id, i) => (
+                                    <option key={id} value={id}>Kö {i + 1}: {users.find(u => u.id === id).name}</option>
+                                ))}
+                                {others.map(u => <option key={u.id} value={u.id}>{u.name}</option>)}
+                            </select>
+                            <button type="button" className="btn sm" disabled={!selected} onClick={() => { assignSpot(spot.id, selected); setChoice(''); }}>
+                                Tilldela
+                            </button>
+                            <button type="button" className="btn sm secondary" onClick={() => removeSpot(spot.id)}>Ta bort</button>
+                        </>
+                    }
+                </div>
+            </div>
+        </li>
+    );
+}
+
+function ParkingAdmin(){
+    const { parkingSpots, addSpot } = useApp();
+    const [kind, setKind] = useState('parking');
+    const [name, setName] = useState('');
+    const [price, setPrice] = useState('');
+
+    function submit(e){
+        e.preventDefault();
+        if (addSpot({ kind, name, price })){
+            setName('');
+            setPrice('');
+        }
+    }
+
+    return <>
+    {[{ kind: 'parking', title: 'Parkeringar' }, { kind: 'garage', title: 'Garage' }].map(group => {
+        const spots = parkingSpots.filter(s => s.kind === group.kind);
+        return (
+            <section key={group.kind} className="panel">
+                <h2>{group.title}</h2>
+                {spots.length === 0
+                    ? <p className="empty-state">Inga platser.</p>
+                    : <ul className="row-list">{spots.map(s => <SpotRow key={s.id} spot={s}/>)}</ul>
+                }
+            </section>
+        );
+    })}
+
+    <section className="panel">
+        <h2>Lägg till plats</h2>
+        <form className="form-grid" onSubmit={submit}>
+            <div className="field">
+                <label htmlFor="spot-kind">Typ</label>
+                <select id="spot-kind" value={kind} onChange={e => setKind(e.target.value)}>
+                    <option value="parking">Parkering</option>
+                    <option value="garage">Garage</option>
+                </select>
+            </div>
+            <div className="field">
+                <label htmlFor="spot-name">Namn</label>
+                <input id="spot-name" value={name} onChange={e => setName(e.target.value)} placeholder="T.ex. Parkering 4" required/>
+            </div>
+            <div className="field">
+                <label htmlFor="spot-price">Pris (kr/mån)</label>
+                <input id="spot-price" type="number" min="0" value={price} onChange={e => setPrice(e.target.value)} required/>
+            </div>
+            <div className="field" style={{ justifyContent: 'flex-end' }}>
+                <button type="submit" className="btn">Lägg till</button>
+            </div>
+        </form>
+    </section>
+    </>
+}
+
 export default function BoardView(){
     const { errands } = useApp();
     const [tab, setTab] = useState('errands');
@@ -151,7 +273,7 @@ export default function BoardView(){
     <StaffLayout>
         <header className="page-header">
             <h1>Styrelsen</h1>
-            <p>Granska ärenden och skriv meddelanden till de boende.</p>
+            <p>Granska ärenden, skriv meddelanden och hantera parkeringar och garage.</p>
         </header>
 
         <div className="chip-row">
@@ -161,9 +283,12 @@ export default function BoardView(){
             <button type="button" className={`chip ${tab === 'messages' ? 'selected' : ''}`} onClick={() => setTab('messages')}>
                 Meddelanden
             </button>
+            <button type="button" className={`chip ${tab === 'parking' ? 'selected' : ''}`} onClick={() => setTab('parking')}>
+                Parkering
+            </button>
         </div>
 
-        {tab === 'errands' ? <ErrandReview/> : <Announcements/>}
+        {tab === 'errands' ? <ErrandReview/> : tab === 'messages' ? <Announcements/> : <ParkingAdmin/>}
     </StaffLayout>
     </>
 }

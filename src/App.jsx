@@ -10,6 +10,7 @@ import Login from './pages/Login/Login';
 import Settings from './pages/Settings/Settings';
 import Errand from './pages/Errand/Errand';
 import Booking from './pages/Booking/Booking';
+import Parking from './pages/Parking/Parking';
 import Incident from './pages/Incident/Incident';
 import Chat from './pages/Chat/Chat';
 import AdminView from './pages/Admin/AdminView';
@@ -32,6 +33,7 @@ function App() {
           <Route index element={<ResidentView/>} />
           <Route path="arenden" element={<Errand/>} />
           <Route path="boka" element={<Booking/>} />
+          <Route path="parkering" element={<Parking/>} />
           <Route path="felanmalan" element={<Incident/>} />
           <Route path="chatt" element={<Chat/>} />
         </Route>

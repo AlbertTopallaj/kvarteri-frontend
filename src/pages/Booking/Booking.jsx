@@ -5,7 +5,6 @@ import './Booking.css'
 
 const TYPES = {
     laundry: { label: 'Tvättstuga', slots: ['07:00–10:00', '10:00–13:00', '13:00–16:00', '16:00–19:00', '19:00–22:00'], taken: ['10:00–13:00'] },
-    parking: { label: 'Parkering', slots: ['Hela dagen', 'Förmiddag', 'Eftermiddag', 'Kväll'], taken: ['Hela dagen'] },
     property: { label: 'Gemensamhetslokal', slots: ['09:00–13:00', '13:00–17:00', '17:00–23:00'], taken: [] },
 };
 
@@ -47,7 +46,7 @@ export default function Booking(){
     return <>
     <header className="page-header">
         <h1>Boka</h1>
-        <p>Boka tvättstuga, parkering eller gemensamhetslokal.</p>
+        <p>Boka tvättstuga eller gemensamhetslokal. Parkering och garage hyrs tillsvidare under Parkering.</p>
     </header>
 
     <section className="panel booking-panel">

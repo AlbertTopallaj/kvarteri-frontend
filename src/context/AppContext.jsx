@@ -34,13 +34,25 @@ function seed(){
             { id: 'a-1', title: 'Välkommen till Kvarteri', text: 'Här publicerar styrelsen information till de boende.', authorName: 'Sara Styrelse', createdAt: '2026-11-01T08:00:00' },
         ],
         notifications: [],
+        // Parkeringar och garage hyrs tillsvidare (bokas inte). renterId = null betyder ledig.
+        parkingSpots: [
+            { id: 'p-1', kind: 'parking', name: 'Parkering 1', price: 450, renterId: 'u-board', queue: [] },
+            { id: 'p-2', kind: 'parking', name: 'Parkering 2', price: 450, renterId: null, queue: [] },
+            { id: 'p-3', kind: 'parking', name: 'Parkering 3', price: 450, renterId: 'u-albert', queue: ['u-board'] },
+            { id: 'g-1', kind: 'garage', name: 'Garage 1', price: 900, renterId: 'u-board', queue: ['u-albert'] },
+            { id: 'g-2', kind: 'garage', name: 'Garage 2', price: 900, renterId: null, queue: [] },
+        ],
     };
 }
 
 function loadData(){
     try {
         const raw = localStorage.getItem(DATA_KEY);
-        if (raw) return JSON.parse(raw);
+        if (raw) {
+            const parsed = JSON.parse(raw);
+            // Data sparad före parkeringsfunktionen saknar parkingSpots.
+            return { ...parsed, parkingSpots: parsed.parkingSpots ?? seed().parkingSpots };
+        }
     } catch { /* ignorera */ }
     return seed();
 }
@@ -217,6 +229,90 @@ export function AppProvider({ children }){
         toast.success('Meddelandet är publicerat.');
     }
 
+    function joinQueue(spotId){
+        if (!user) return;
+        const spot = dataRef.current.parkingSpots.find(s => s.id === spotId);
+        if (!spot || spot.renterId === user.id || spot.queue.includes(user.id)) return;
+        update(d => ({
+            ...d,
+            parkingSpots: d.parkingSpots.map(s => s.id === spotId ? { ...s, queue: [...s.queue, user.id] } : s),
+        }));
+        toast.success(`Du står nu i kö till ${spot.name}.`);
+    }
+
+    function leaveQueue(spotId){
+        if (!user) return;
+        const spot = dataRef.current.parkingSpots.find(s => s.id === spotId);
+        if (!spot) return;
+        update(d => ({
+            ...d,
+            parkingSpots: d.parkingSpots.map(s => s.id === spotId ? { ...s, queue: s.queue.filter(id => id !== user.id) } : s),
+        }));
+        toast.info(`Du har lämnat kön till ${spot.name}.`);
+    }
+
+    // Styrelsens hantering av hyresplatser.
+    function assignSpot(spotId, userId){
+        const spot = dataRef.current.parkingSpots.find(s => s.id === spotId);
+        const renter = dataRef.current.users.find(u => u.id === userId);
+        if (!spot || !renter) return;
+        update(d => ({
+            ...d,
+            parkingSpots: d.parkingSpots.map(s => s.id === spotId
+                ? { ...s, renterId: userId, queue: s.queue.filter(id => id !== userId) }
+                : s),
+            notifications: [
+                addNotification({ toUserId: userId }, `Du har fått ${spot.name} (${spot.price} kr/mån).`),
+                ...d.notifications,
+            ],
+        }));
+        toast.success(`${spot.name} har hyrts ut till ${renter.name}.`);
+    }
+
+    function terminateSpot(spotId){
+        const spot = dataRef.current.parkingSpots.find(s => s.id === spotId);
+        if (!spot || !spot.renterId) return;
+        const validQueue = spot.queue.filter(id => dataRef.current.users.some(u => u.id === id));
+        const notes = [];
+        if (spot.renterId && dataRef.current.users.some(u => u.id === spot.renterId)){
+            notes.push(addNotification({ toUserId: spot.renterId }, `Ditt hyresavtal för ${spot.name} har sagts upp.`));
+        }
+        if (validQueue[0]){
+            notes.push(addNotification({ toUserId: validQueue[0] }, `${spot.name} är nu ledig – du står först i kön!`));
+        }
+        update(d => ({
+            ...d,
+            parkingSpots: d.parkingSpots.map(s => s.id === spotId ? { ...s, renterId: null } : s),
+            notifications: [...notes, ...d.notifications],
+        }));
+        toast.success(`${spot.name} är nu ledig.`);
+    }
+
+    function setSpotPrice(spotId, price){
+        const value = Number(price);
+        if (!Number.isFinite(value) || value < 0) return;
+        update(d => ({
+            ...d,
+            parkingSpots: d.parkingSpots.map(s => s.id === spotId ? { ...s, price: value } : s),
+        }));
+    }
+
+    function addSpot({ kind, name, price }){
+        const cleanName = name.trim();
+        if (!cleanName) return false;
+        const spot = { id: makeId('p'), kind, name: cleanName, price: Number(price) || 0, renterId: null, queue: [] };
+        update(d => ({ ...d, parkingSpots: [...d.parkingSpots, spot] }));
+        toast.success(`${spot.name} har lagts till.`);
+        return true;
+    }
+
+    function removeSpot(spotId){
+        const spot = dataRef.current.parkingSpots.find(s => s.id === spotId);
+        if (!spot) return;
+        update(d => ({ ...d, parkingSpots: d.parkingSpots.filter(s => s.id !== spotId) }));
+        toast.success(`${spot.name} har tagits bort.`);
+    }
+
     function markAllRead(){
         if (!user) return;
         update(d => ({
@@ -242,6 +338,14 @@ export function AppProvider({ children }){
         users: data.users,
         errands: data.errands,
         announcements: data.announcements,
+        parkingSpots: data.parkingSpots,
+        joinQueue,
+        leaveQueue,
+        assignSpot,
+        terminateSpot,
+        setSpotPrice,
+        addSpot,
+        removeSpot,
         notifications,
         unreadCount,
         login,

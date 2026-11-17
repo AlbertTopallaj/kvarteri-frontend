@@ -1,12 +1,13 @@
 import { Link, NavLink } from 'react-router';
 import { useApp } from '../../context/AppContext';
 import './Sidebar.css'
-import { CalendarDays, FileExclamationPoint, HouseHeart, LogOut, MessagesCircle, Settings, SquareText } from 'lucide-react'
+import { CalendarDays, Car, FileExclamationPoint, HouseHeart, LogOut, MessagesCircle, Settings, SquareText } from 'lucide-react'
 
 const navItems = [
     { to: '/resident', label: 'Hem', icon: HouseHeart, end: true },
     { to: '/resident/arenden', label: 'Ärenden', icon: SquareText },
     { to: '/resident/boka', label: 'Boka', icon: CalendarDays },
+    { to: '/resident/parkering', label: 'Parkering', icon: Car },
     { to: '/resident/felanmalan', label: 'Felanmälan', icon: FileExclamationPoint },
     { to: '/resident/chatt', label: 'Chatt', icon: MessagesCircle },
 ];
