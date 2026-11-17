@@ -1,0 +1,9 @@
+.booking-panel {
+    display: flex;
+    flex-direction: column;
+    gap: 28px;
+}
+
+.booking-step h2 {
+    margin-bottom: 12px;
+}

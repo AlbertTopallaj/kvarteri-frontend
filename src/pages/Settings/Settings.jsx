@@ -1,4 +1,4 @@
-import SettingsView from "../components/Settings/SettingsView";
+import SettingsView from "../../components/Settings/SettingsView";
 
 export default function Settings(){
     return <>
