@@ -24,6 +24,7 @@ export default function LoginForm(){
         <label>Lösenord</label>
         <input value={password} id='password' type="password" placeholder="Ange lösenord" onChange={(e) => setPassword(e.target.value)}></input>
         <button className='login-button'>Logga in</button>
+        <p className='login-hint'>Glömt lösenordet? Kontakta din administratör</p>
     </form>
     </div>
     </>
