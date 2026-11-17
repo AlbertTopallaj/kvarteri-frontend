@@ -8,13 +8,12 @@ const GROUPS = [
 ];
 
 export default function Parking(){
-    const { user, users, parkingSpots, joinQueue, leaveQueue } = useApp();
+    const { parkingSpots, joinQueue, leaveQueue } = useApp();
 
-    const userById = (id) => users.find(u => u.id === id);
 
     function renterText(spot){
         if (!spot.renterId) return 'Ledig';
-        const renter = userById(spot.renterId);
+        const renter = spot.renter;
         if (!renter) return 'Hyrs av borttagen användare';
         return `${renter.name}${renter.apartment ? ` (lgh ${renter.apartment})` : ''}`;
     }
@@ -34,10 +33,9 @@ export default function Parking(){
                     ? <p className="empty-state">Inga platser.</p>
                     : <ul className="row-list">
                         {spots.map(spot => {
-                            // Ignorera användare som tagits bort ur kön.
-                            const queue = spot.queue.filter(id => userById(id));
-                            const position = queue.indexOf(user.id) + 1;
-                            const isRenter = spot.renterId === user.id;
+                            const queue = spot.queue;
+                            const position = spot.myQueuePosition;
+                            const isRenter = spot.mine;
                             return (
                                 <li key={spot.id} className="review-item">
                                     <div className="review-body">

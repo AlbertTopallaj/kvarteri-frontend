@@ -20,9 +20,9 @@ export default function Errand(){
     const mine = errands.filter(e => e.userId === user.id);
     const visible = mine.filter(e => filter === 'all' || e.status === filter);
 
-    function submit(e){
+    async function submit(e){
         e.preventDefault();
-        addErrand({ title, description, kind: 'errand' });
+        if (!await addErrand({ title, description, kind: 'errand' })) return;
         setTitle('');
         setDescription('');
     }

@@ -14,9 +14,9 @@ export default function Incident(){
 
     const reports = errands.filter(e => e.userId === user.id && e.kind === 'incident');
 
-    function submit(e){
+    async function submit(e){
         e.preventDefault();
-        addErrand({ title: `${category}: ${location}`, description, kind: 'incident' });
+        if (!await addErrand({ title: `${category}: ${location}`, description, kind: 'incident' })) return;
         setLocation('');
         setDescription('');
     }

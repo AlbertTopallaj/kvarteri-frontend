@@ -1,69 +1,61 @@
-import { createContext, useContext, useEffect, useMemo, useRef, useState } from 'react';
+import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
 import { useToast } from '../components/Toast/ToastProvider';
-import { STATUS_LABELS } from '../utils/roles';
+import { api, basicToken, setToken, setUnauthorizedHandler } from '../api/client';
 import { playPing } from '../utils/sound';
 
 /*
- * Klientbaserad datalagring i väntan på ett riktigt API.
- * - Data (användare, ärenden, meddelanden, notiser) sparas i localStorage
- *   och synkas mellan flikar via "storage"-eventet.
- * - Inloggad användare sparas i sessionStorage (en per flik).
- * OBS: ingen riktig autentisering – lösenord kontrolleras inte.
+ * Datalagret pratar med Kvarteri-backend (se src/api/client.js).
+ * - Inloggning sker med HTTP Basic; uppgifterna sparas i sessionStorage (en per flik).
+ * - Datan hämtas efter inloggning och uppdateras var 15:e sekund, när fliken får fokus
+ *   och efter varje ändring. Nya notiser visas som toast.
  */
 
-const DATA_KEY = 'kvarteri-data';
-const SESSION_KEY = 'kvarteri-session';
+const SESSION_KEY = 'kvarteri-auth';
+const POLL_MS = 15000;
 
 const AppContext = createContext(null);
 
-const makeId = (prefix) => `${prefix}-${Date.now().toString(36)}${Math.random().toString(36).slice(2, 6)}`;
+const ROLE_FROM_API = { ADMIN: 'admin', BOARD_MEMBER: 'board', RESIDENT: 'resident' };
+const ROLE_TO_API = { admin: 'ADMIN', board: 'BOARD_MEMBER', resident: 'RESIDENT' };
+const STATUS_FROM_API = { PENDING: 'pending', IN_PROGRESS: 'progress', DONE: 'done', REJECTED: 'rejected' };
+const STATUS_TO_API = { pending: 'PENDING', progress: 'IN_PROGRESS', done: 'DONE', rejected: 'REJECTED' };
 
-function seed(){
-    return {
-        users: [
-            { id: 'u-admin', name: 'Utvecklare', username: 'admin', role: 'admin', apartment: '' },
-            { id: 'u-board', name: 'Sara Styrelse', username: 'styrelse', role: 'board', apartment: '1102' },
-            { id: 'u-albert', name: 'Albert', username: 'albert', role: 'resident', apartment: '1101' },
-        ],
-        errands: [
-            { id: 'e-1', title: 'Trasig lampa i trapphuset', description: 'Lampan på plan 3 lyser inte.', kind: 'incident', userId: 'u-albert', createdAt: '2026-11-12T09:00:00', status: 'progress' },
-            { id: 'e-2', title: 'Fråga om andrahandsuthyrning', description: '', kind: 'errand', userId: 'u-albert', createdAt: '2026-11-03T14:30:00', status: 'pending' },
-            { id: 'e-3', title: 'Byte av cylinder i ytterdörr', description: '', kind: 'errand', userId: 'u-albert', createdAt: '2026-10-21T10:15:00', status: 'done' },
-        ],
-        announcements: [
-            { id: 'a-1', title: 'Välkommen till Kvarteri', text: 'Här publicerar styrelsen information till de boende.', authorName: 'Sara Styrelse', createdAt: '2026-11-01T08:00:00' },
-        ],
-        notifications: [],
-        // Parkeringar och garage hyrs tillsvidare (bokas inte). renterId = null betyder ledig.
-        parkingSpots: [
-            { id: 'p-1', kind: 'parking', name: 'Parkering 1', price: 450, renterId: 'u-board', queue: [] },
-            { id: 'p-2', kind: 'parking', name: 'Parkering 2', price: 450, renterId: null, queue: [] },
-            { id: 'p-3', kind: 'parking', name: 'Parkering 3', price: 450, renterId: 'u-albert', queue: ['u-board'] },
-            { id: 'g-1', kind: 'garage', name: 'Garage 1', price: 900, renterId: 'u-board', queue: ['u-albert'] },
-            { id: 'g-2', kind: 'garage', name: 'Garage 2', price: 900, renterId: null, queue: [] },
-        ],
-    };
-}
+const toUser = (u) => ({
+    id: u.id,
+    name: u.name,
+    username: u.email ?? '',
+    email: u.email ?? '',
+    role: ROLE_FROM_API[u.role] ?? 'resident',
+    apartment: u.apartmentNumber ?? '',
+});
 
-function loadData(){
-    try {
-        const raw = localStorage.getItem(DATA_KEY);
-        if (raw) {
-            const parsed = JSON.parse(raw);
-            // Data sparad före parkeringsfunktionen saknar parkingSpots.
-            return { ...parsed, parkingSpots: parsed.parkingSpots ?? seed().parkingSpots };
-        }
-    } catch { /* ignorera */ }
-    return seed();
-}
+const toErrand = (t) => ({
+    id: t.id,
+    title: t.subject,
+    description: t.body ?? '',
+    kind: t.kind === 'INCIDENT' ? 'incident' : 'errand',
+    userId: t.createdBy.id,
+    author: { name: t.createdBy.name, apartment: t.createdBy.apartmentNumber ?? '' },
+    createdAt: t.createdAt,
+    status: STATUS_FROM_API[t.status] ?? 'pending',
+});
 
-function saveData(data){
-    try {
-        localStorage.setItem(DATA_KEY, JSON.stringify(data));
-    } catch { /* ignorera */ }
-}
+const toSpot = (s) => ({
+    id: s.id,
+    kind: s.kind === 'GARAGE' ? 'garage' : 'parking',
+    name: s.name,
+    price: s.price,
+    renterId: s.tenant?.id ?? null,
+    renter: s.tenant ? { id: s.tenant.id, name: s.tenant.name, apartment: s.tenant.apartmentNumber ?? '' } : null,
+    queue: s.queue.map(q => q.id),
+    queueMembers: s.queue,
+    myQueuePosition: s.myQueuePosition ?? 0,
+    mine: s.mine,
+});
 
-function loadSession(){
+const EMPTY = { users: [], errands: [], announcements: [], notifications: [], parkingSpots: [] };
+
+function loadToken(){
     try {
         return sessionStorage.getItem(SESSION_KEY);
     } catch {
@@ -71,282 +63,242 @@ function loadSession(){
     }
 }
 
-function isVisibleTo(notification, user){
-    if (!user) return false;
-    return notification.toUserId === user.id || (notification.toRole && notification.toRole === user.role);
+function saveToken(value){
+    try {
+        if (value) sessionStorage.setItem(SESSION_KEY, value);
+        else sessionStorage.removeItem(SESSION_KEY);
+    } catch { /* ignorera */ }
 }
 
 export function AppProvider({ children }){
     const toast = useToast();
-    const [data, setData] = useState(loadData);
-    const [sessionId, setSessionId] = useState(loadSession);
-    const dataRef = useRef(data);
-    const sessionRef = useRef(sessionId);
+    const [user, setUser] = useState(null);
+    const [data, setData] = useState(EMPTY);
+    const [ready, setReady] = useState(false);
+    const userRef = useRef(null);
+    const knownNotes = useRef(null);
 
-    const user = useMemo(
-        () => data.users.find(u => u.id === sessionId) ?? null,
-        [data.users, sessionId]
-    );
+    const clearSession = useCallback(() => {
+        setToken(null);
+        saveToken(null);
+        userRef.current = null;
+        knownNotes.current = null;
+        setUser(null);
+        setData(EMPTY);
+    }, []);
 
-    function update(fn){
-        const next = fn(dataRef.current);
-        dataRef.current = next;
-        saveData(next);
-        setData(next);
-    }
+    // Hämtar allt som den inloggade rollen får se.
+    const refresh = useCallback(async () => {
+        const me = userRef.current;
+        if (!me) return;
+        const staff = me.role !== 'resident';
+        try {
+            const [messages, tickets, notes, spots, users] = await Promise.all([
+                api('/messages'),
+                api('/tickets'),
+                api('/notifications'),
+                api('/parking-spots'),
+                me.role === 'admin' ? api('/admin/residents') : staff ? api('/residents') : Promise.resolve([]),
+            ]);
+            if (userRef.current !== me) return;
 
-    function addNotification(target, text){
-        return { id: makeId('n'), text, createdAt: new Date().toISOString(), readBy: [], ...target };
-    }
-
-    // Synka ändringar som görs i andra flikar och visa toast för nya notiser.
-    useEffect(() => {
-        function onStorage(e){
-            if (e.key !== DATA_KEY || !e.newValue) return;
-            let next;
-            try {
-                next = JSON.parse(e.newValue);
-            } catch {
-                return;
+            const notifications = notes.map(n => ({ id: n.id, text: n.text, createdAt: n.createdAt, read: n.read }));
+            if (knownNotes.current) {
+                const fresh = notifications.filter(n => !n.read && !knownNotes.current.has(n.id));
+                if (fresh.length > 0) playPing();
+                fresh.slice(0, 3).forEach(n => toast.info(n.text));
             }
-            const me = next.users.find(u => u.id === sessionRef.current);
-            const known = new Set(dataRef.current.notifications.map(n => n.id));
-            const fresh = next.notifications.filter(n => !known.has(n.id) && isVisibleTo(n, me));
-            if (fresh.length > 0) playPing();
-            fresh.slice(0, 3).forEach(n => toast.info(n.text));
-            dataRef.current = next;
-            setData(next);
+            knownNotes.current = new Set(notifications.map(n => n.id));
+
+            setData({
+                users: users.map(toUser),
+                errands: tickets.map(toErrand),
+                announcements: messages.filter(m => !m.personal).map(m => ({
+                    id: m.id, title: m.title, text: m.body, authorName: m.author, createdAt: m.createdAt,
+                })),
+                notifications,
+                parkingSpots: spots.map(toSpot),
+            });
+        } catch {
+            // Tillfälligt nätverksfel eller utloggning (hanteras av 401-hanteraren): behåll senaste data.
         }
-        window.addEventListener('storage', onStorage);
-        return () => window.removeEventListener('storage', onStorage);
     }, [toast]);
 
-    function setSession(id){
-        sessionRef.current = id;
-        setSessionId(id);
-        try {
-            if (id) sessionStorage.setItem(SESSION_KEY, id);
-            else sessionStorage.removeItem(SESSION_KEY);
-        } catch { /* ignorera */ }
-    }
+    const refreshRef = useRef(refresh);
+    useEffect(() => { refreshRef.current = refresh; }, [refresh]);
 
-    function login(username){
-        const found = dataRef.current.users.find(
-            u => u.username.toLowerCase() === username.trim().toLowerCase()
-        );
-        if (!found){
-            toast.error('Fel användarnamn eller lösenord.');
-            return null;
+    const startSession = useCallback(async (me) => {
+        userRef.current = me;
+        knownNotes.current = null;
+        setUser(me);
+        await refreshRef.current();
+    }, []);
+
+    // Återställ en pågående session i den här fliken.
+    useEffect(() => {
+        setUnauthorizedHandler(() => {
+            if (userRef.current) toast.error('Din session har gått ut. Logga in igen.');
+            clearSession();
+        });
+        const saved = loadToken();
+        if (!saved){
+            setReady(true);
+            return;
         }
-        setSession(found.id);
-        toast.success(`Välkommen, ${found.name}`);
-        return found;
-    }
+        setToken(saved);
+        api('/me')
+            .then(me => startSession(toUser(me)))
+            .catch(() => clearSession())
+            .finally(() => setReady(true));
+    }, [clearSession, startSession, toast]);
 
-    function logout(){
-        setSession(null);
-        toast.info('Du har loggats ut.');
-    }
+    // Uppdatera regelbundet och när fliken får fokus.
+    useEffect(() => {
+        if (!user) return;
+        const timer = setInterval(() => refreshRef.current(), POLL_MS);
+        const onFocus = () => refreshRef.current();
+        window.addEventListener('focus', onFocus);
+        return () => {
+            clearInterval(timer);
+            window.removeEventListener('focus', onFocus);
+        };
+    }, [user]);
 
-    function addUser({ name, username, role, apartment }){
-        const cleanUsername = username.trim().toLowerCase();
-        if (dataRef.current.users.some(u => u.username.toLowerCase() === cleanUsername)){
-            toast.error(`Användarnamnet "${cleanUsername}" är redan taget.`);
+    // Kör en ändring mot API:t, visar fel som toast och uppdaterar data. Returnerar true om det lyckades.
+    async function run(action, successMessage){
+        try {
+            await action();
+        } catch (e) {
+            toast.error(e.message);
+            if (e.status === 409 || e.status === 404) await refresh();
             return false;
         }
-        const newUser = { id: makeId('u'), name: name.trim(), username: cleanUsername, role, apartment: apartment.trim() };
-        update(d => ({ ...d, users: [...d.users, newUser] }));
-        toast.success(`${newUser.name} har lagts till som ${role === 'admin' ? 'administratör' : role === 'board' ? 'styrelsemedlem' : 'boende'}.`);
+        if (successMessage) toast.success(successMessage);
+        await refresh();
         return true;
     }
 
-    function removeUser(id){
-        const target = dataRef.current.users.find(u => u.id === id);
-        if (!target) return;
-        update(d => ({ ...d, users: d.users.filter(u => u.id !== id) }));
-        toast.success(`${target.name} har tagits bort.`);
+    async function login(email, password){
+        const candidate = basicToken(email.trim(), password);
+        setToken(candidate);
+        try {
+            const me = toUser(await api('/me'));
+            saveToken(candidate);
+            await startSession(me);
+            toast.success(`Välkommen, ${me.name}`);
+            return me;
+        } catch (e) {
+            setToken(null);
+            toast.error(e.message);
+            return null;
+        }
     }
 
-    function deleteAccount(){
-        if (!user) return;
-        update(d => ({ ...d, users: d.users.filter(u => u.id !== user.id) }));
-        setSession(null);
+    function logout(){
+        clearSession();
+        toast.info('Du har loggats ut.');
+    }
+
+    function addUser({ name, email, password, role, apartment }){
+        return run(() => api('/admin/residents', {
+            method: 'POST',
+            body: { name: name.trim(), email: email.trim(), password, role: ROLE_TO_API[role], apartmentNumber: apartment.trim() },
+        }), `${name.trim()} har lagts till.`);
+    }
+
+    function removeUser(id){
+        const target = data.users.find(u => u.id === id);
+        return run(() => api(`/admin/residents/${id}`, { method: 'DELETE' }),
+            target ? `${target.name} har tagits bort.` : null);
+    }
+
+    async function deleteAccount(){
+        try {
+            await api('/me', { method: 'DELETE' });
+        } catch (e) {
+            toast.error(e.message);
+            return;
+        }
+        clearSession();
         toast.info('Ditt konto har raderats.');
     }
 
     function addErrand({ title, description, kind }){
-        const errand = {
-            id: makeId('e'),
-            title: title.trim(),
-            description: description.trim(),
-            kind,
-            userId: user.id,
-            createdAt: new Date().toISOString(),
-            status: 'pending',
-        };
-        const label = kind === 'incident' ? 'felanmälan' : 'ärende';
-        update(d => ({
-            ...d,
-            errands: [errand, ...d.errands],
-            notifications: [
-                addNotification({ toRole: 'board' }, `Ny ${label} från ${user.name}: ${errand.title}`),
-                ...d.notifications,
-            ],
-        }));
-        toast.success(kind === 'incident' ? 'Din felanmälan är skickad.' : 'Ditt ärende är skickat.');
+        return run(() => api('/tickets', {
+            method: 'POST',
+            body: { subject: title.trim(), body: description.trim(), kind: kind === 'incident' ? 'INCIDENT' : 'ERRAND' },
+        }), kind === 'incident' ? 'Din felanmälan är skickad.' : 'Ditt ärende är skickat.');
     }
 
     function setErrandStatus(id, status){
-        const errand = dataRef.current.errands.find(e => e.id === id);
-        if (!errand) return;
-        update(d => ({
-            ...d,
-            errands: d.errands.map(e => e.id === id ? { ...e, status } : e),
-            notifications: [
-                addNotification({ toUserId: errand.userId }, `Ditt ärende "${errand.title}" har status: ${STATUS_LABELS[status]}`),
-                ...d.notifications,
-            ],
-        }));
-        toast.success(`Ärendet markerades som ${STATUS_LABELS[status].toLowerCase()}.`);
+        return run(() => api(`/tickets/${id}`, { method: 'PATCH', body: { status: STATUS_TO_API[status] } }));
     }
 
     function postAnnouncement({ title, text }){
-        const announcement = {
-            id: makeId('a'),
-            title: title.trim(),
-            text: text.trim(),
-            authorName: user.name,
-            createdAt: new Date().toISOString(),
-        };
-        update(d => ({
-            ...d,
-            announcements: [announcement, ...d.announcements],
-            notifications: [
-                addNotification({ toRole: 'resident' }, `Nytt meddelande från styrelsen: ${announcement.title}`),
-                ...d.notifications,
-            ],
-        }));
-        toast.success('Meddelandet är publicerat.');
+        return run(() => api('/messages', { method: 'POST', body: { title: title.trim(), body: text.trim() } }),
+            'Meddelandet är publicerat.');
     }
 
     function joinQueue(spotId){
-        if (!user) return;
-        const spot = dataRef.current.parkingSpots.find(s => s.id === spotId);
-        if (!spot || spot.renterId === user.id || spot.queue.includes(user.id)) return;
-        update(d => ({
-            ...d,
-            parkingSpots: d.parkingSpots.map(s => s.id === spotId ? { ...s, queue: [...s.queue, user.id] } : s),
-        }));
-        toast.success(`Du står nu i kö till ${spot.name}.`);
+        const spot = data.parkingSpots.find(s => s.id === spotId);
+        return run(() => api(`/parking-spots/${spotId}/queue`, { method: 'POST' }),
+            spot ? `Du står nu i kö till ${spot.name}.` : null);
     }
 
     function leaveQueue(spotId){
-        if (!user) return;
-        const spot = dataRef.current.parkingSpots.find(s => s.id === spotId);
-        if (!spot) return;
-        update(d => ({
-            ...d,
-            parkingSpots: d.parkingSpots.map(s => s.id === spotId ? { ...s, queue: s.queue.filter(id => id !== user.id) } : s),
-        }));
-        toast.info(`Du har lämnat kön till ${spot.name}.`);
+        const spot = data.parkingSpots.find(s => s.id === spotId);
+        return run(() => api(`/parking-spots/${spotId}/queue`, { method: 'DELETE' }),
+            spot ? `Du har lämnat kön till ${spot.name}.` : null);
     }
 
-    // Styrelsens hantering av hyresplatser.
     function assignSpot(spotId, userId){
-        const spot = dataRef.current.parkingSpots.find(s => s.id === spotId);
-        const renter = dataRef.current.users.find(u => u.id === userId);
-        if (!spot || !renter) return;
-        update(d => ({
-            ...d,
-            parkingSpots: d.parkingSpots.map(s => s.id === spotId
-                ? { ...s, renterId: userId, queue: s.queue.filter(id => id !== userId) }
-                : s),
-            notifications: [
-                addNotification({ toUserId: userId }, `Du har fått ${spot.name} (${spot.price} kr/mån).`),
-                ...d.notifications,
-            ],
-        }));
-        toast.success(`${spot.name} har hyrts ut till ${renter.name}.`);
+        const spot = data.parkingSpots.find(s => s.id === spotId);
+        const renter = data.users.find(u => u.id === userId);
+        return run(() => api(`/parking-spots/${spotId}/assign`, { method: 'POST', body: { residentId: userId } }),
+            spot && renter ? `${spot.name} har hyrts ut till ${renter.name}.` : null);
     }
 
     function terminateSpot(spotId){
-        const spot = dataRef.current.parkingSpots.find(s => s.id === spotId);
-        if (!spot || !spot.renterId) return;
-        const validQueue = spot.queue.filter(id => dataRef.current.users.some(u => u.id === id));
-        const notes = [];
-        if (spot.renterId && dataRef.current.users.some(u => u.id === spot.renterId)){
-            notes.push(addNotification({ toUserId: spot.renterId }, `Ditt hyresavtal för ${spot.name} har sagts upp.`));
-        }
-        if (validQueue[0]){
-            notes.push(addNotification({ toUserId: validQueue[0] }, `${spot.name} är nu ledig – du står först i kön!`));
-        }
-        update(d => ({
-            ...d,
-            parkingSpots: d.parkingSpots.map(s => s.id === spotId ? { ...s, renterId: null } : s),
-            notifications: [...notes, ...d.notifications],
-        }));
-        toast.success(`${spot.name} är nu ledig.`);
+        const spot = data.parkingSpots.find(s => s.id === spotId);
+        return run(() => api(`/parking-spots/${spotId}/terminate`, { method: 'POST' }),
+            spot ? `${spot.name} är nu ledig.` : null);
     }
 
     function setSpotPrice(spotId, price){
         const value = Number(price);
-        if (!Number.isFinite(value) || value < 0) return;
-        update(d => ({
-            ...d,
-            parkingSpots: d.parkingSpots.map(s => s.id === spotId ? { ...s, price: value } : s),
-        }));
+        if (!Number.isFinite(value) || value < 0) return Promise.resolve(false);
+        return run(() => api(`/parking-spots/${spotId}`, { method: 'PATCH', body: { price: Math.round(value) } }));
     }
 
     function addSpot({ kind, name, price }){
         const cleanName = name.trim();
-        if (!cleanName) return false;
-        const spot = { id: makeId('p'), kind, name: cleanName, price: Number(price) || 0, renterId: null, queue: [] };
-        update(d => ({ ...d, parkingSpots: [...d.parkingSpots, spot] }));
-        toast.success(`${spot.name} har lagts till.`);
-        return true;
+        if (!cleanName) return Promise.resolve(false);
+        return run(() => api('/parking-spots', {
+            method: 'POST',
+            body: { kind: kind === 'garage' ? 'GARAGE' : 'PARKING', name: cleanName, price: Math.round(Number(price) || 0) },
+        }), `${cleanName} har lagts till.`);
     }
 
     function removeSpot(spotId){
-        const spot = dataRef.current.parkingSpots.find(s => s.id === spotId);
-        if (!spot) return;
-        update(d => ({ ...d, parkingSpots: d.parkingSpots.filter(s => s.id !== spotId) }));
-        toast.success(`${spot.name} har tagits bort.`);
+        const spot = data.parkingSpots.find(s => s.id === spotId);
+        return run(() => api(`/parking-spots/${spotId}`, { method: 'DELETE' }),
+            spot ? `${spot.name} har tagits bort.` : null);
     }
 
     function markAllRead(){
-        if (!user) return;
-        update(d => ({
-            ...d,
-            notifications: d.notifications.map(n =>
-                isVisibleTo(n, user) && !n.readBy.includes(user.id)
-                    ? { ...n, readBy: [...n.readBy, user.id] }
-                    : n
-            ),
-        }));
+        return run(() => api('/notifications/read-all', { method: 'POST' }));
     }
 
-    const notifications = useMemo(
-        () => data.notifications
-            .filter(n => isVisibleTo(n, user))
-            .map(n => ({ ...n, read: n.readBy.includes(user.id) })),
-        [data.notifications, user]
-    );
-    const unreadCount = notifications.filter(n => !n.read).length;
+    const unreadCount = data.notifications.filter(n => !n.read).length;
 
-    const value = {
+    const value = useMemo(() => ({
         user,
+        ready,
         users: data.users,
         errands: data.errands,
         announcements: data.announcements,
         parkingSpots: data.parkingSpots,
-        joinQueue,
-        leaveQueue,
-        assignSpot,
-        terminateSpot,
-        setSpotPrice,
-        addSpot,
-        removeSpot,
-        notifications,
+        notifications: data.notifications,
         unreadCount,
         login,
         logout,
@@ -356,14 +308,20 @@ export function AppProvider({ children }){
         addErrand,
         setErrandStatus,
         postAnnouncement,
+        joinQueue,
+        leaveQueue,
+        assignSpot,
+        terminateSpot,
+        setSpotPrice,
+        addSpot,
+        removeSpot,
         markAllRead,
-    };
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }), [user, ready, data, unreadCount]);
 
-    return <>
-    <AppContext.Provider value={value}>
+    return <AppContext.Provider value={value}>
         {children}
     </AppContext.Provider>
-    </>
 }
 
 export function useApp(){

@@ -5,7 +5,7 @@ import { useApp } from '../../context/AppContext';
 import { ROLE_LABELS } from '../../utils/roles';
 import '../../styles/ResidentPages.css'
 
-const EMPTY_FORM = { name: '', username: '', role: 'resident', apartment: '' };
+const EMPTY_FORM = { name: '', email: '', password: '', role: 'resident', apartment: '' };
 
 export default function AdminView(){
     const { user, users, addUser, removeUser } = useApp();
@@ -14,9 +14,9 @@ export default function AdminView(){
 
     const set = (key) => (e) => setForm(prev => ({ ...prev, [key]: e.target.value }));
 
-    function submit(e){
+    async function submit(e){
         e.preventDefault();
-        if (addUser(form)) setForm(EMPTY_FORM);
+        if (await addUser(form)) setForm(EMPTY_FORM);
     }
 
     return <>
@@ -35,8 +35,12 @@ export default function AdminView(){
                         <input id="name" value={form.name} onChange={set('name')} placeholder="För- och efternamn" required/>
                     </div>
                     <div className="field">
-                        <label htmlFor="username">Användarnamn</label>
-                        <input id="username" value={form.username} onChange={set('username')} placeholder="t.ex. anna" required/>
+                        <label htmlFor="email">E-post (användarnamn)</label>
+                        <input id="email" type="email" value={form.email} onChange={set('email')} placeholder="t.ex. anna@exempel.se" required/>
+                    </div>
+                    <div className="field">
+                        <label htmlFor="password">Lösenord (minst 10 tecken)</label>
+                        <input id="password" type="password" autoComplete="new-password" minLength={10} value={form.password} onChange={set('password')} required/>
                     </div>
                     <div className="field">
                         <label htmlFor="role">Roll</label>
@@ -68,7 +72,7 @@ export default function AdminView(){
                         <div>
                             <div className="row-title">{u.name}</div>
                             <div className="row-meta">
-                                @{u.username}{u.apartment && ` · Lgh ${u.apartment}`}
+                                {u.email}{u.apartment && ` · Lgh ${u.apartment}`}
                             </div>
                         </div>
                         <div className="row-actions">

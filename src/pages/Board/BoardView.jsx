@@ -28,11 +28,10 @@ const ACTIONS = {
 };
 
 function ErrandReview(){
-    const { errands, users, setErrandStatus } = useApp();
+    const { errands, setErrandStatus } = useApp();
     const [filter, setFilter] = useState('all');
 
     const visible = errands.filter(e => filter === 'all' || e.status === filter);
-    const nameOf = (id) => users.find(u => u.id === id);
 
     return <>
     <section className="panel">
@@ -54,7 +53,7 @@ function ErrandReview(){
             ? <p className="empty-state">Inga ärenden att granska.</p>
             : <ul className="row-list">
                 {visible.map(e => {
-                    const author = nameOf(e.userId);
+                    const author = e.author;
                     return (
                         <li key={e.id} className="review-item">
                             <div className="review-body">
@@ -94,9 +93,9 @@ function Announcements(){
     const [title, setTitle] = useState('');
     const [text, setText] = useState('');
 
-    function submit(e){
+    async function submit(e){
         e.preventDefault();
-        postAnnouncement({ title, text });
+        if (!await postAnnouncement({ title, text })) return;
         setTitle('');
         setText('');
     }
@@ -144,8 +143,8 @@ function Announcements(){
 
 function SpotRow({ spot }){
     const { users, assignSpot, terminateSpot, setSpotPrice, removeSpot } = useApp();
-    const queue = spot.queue.filter(id => users.some(u => u.id === id));
-    const renter = users.find(u => u.id === spot.renterId);
+    const queue = spot.queue;
+    const renter = spot.renter;
     const [choice, setChoice] = useState('');
     const [price, setPrice] = useState(String(spot.price));
     const selected = choice || queue[0] || '';
@@ -171,7 +170,7 @@ function SpotRow({ spot }){
                 <div className="row-meta">
                     Kö: {queue.length === 0
                         ? 'ingen'
-                        : queue.map((id, i) => `${i + 1}. ${users.find(u => u.id === id).name}`).join(', ')}
+                        : spot.queueMembers.map((q, i) => `${i + 1}. ${q.name}`).join(", ")}
                 </div>
             </div>
             <div className="review-side">
@@ -193,8 +192,8 @@ function SpotRow({ spot }){
                         : <>
                             <select className="spot-select" aria-label={`Hyresgäst för ${spot.name}`} value={selected} onChange={e => setChoice(e.target.value)}>
                                 <option value="">Välj hyresgäst</option>
-                                {queue.map((id, i) => (
-                                    <option key={id} value={id}>Kö {i + 1}: {users.find(u => u.id === id).name}</option>
+                                {spot.queueMembers.map((q, i) => (
+                                    <option key={q.id} value={q.id}>Kö {i + 1}: {q.name}</option>
                                 ))}
                                 {others.map(u => <option key={u.id} value={u.id}>{u.name}</option>)}
                             </select>
@@ -216,9 +215,9 @@ function ParkingAdmin(){
     const [name, setName] = useState('');
     const [price, setPrice] = useState('');
 
-    function submit(e){
+    async function submit(e){
         e.preventDefault();
-        if (addSpot({ kind, name, price })){
+        if (await addSpot({ kind, name, price })){
             setName('');
             setPrice('');
         }
