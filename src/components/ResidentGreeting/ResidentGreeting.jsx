@@ -5,8 +5,9 @@ export default function ResidentGreeting(){
     const [username, setUsername] = useState("Albert");
 
     return <>
-    <div className="greeting-container">
-        <h1 className="greeting">Välkommen {username}</h1>
-    </div>
+    <header className="greeting-container">
+        <h1 className="greeting">Välkommen, {username}</h1>
+        <p className="greeting-sub">Här är en översikt över ditt boende.</p>
+    </header>
     </>
 }
