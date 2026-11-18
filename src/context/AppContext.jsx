@@ -27,6 +27,7 @@ const toUser = (u) => ({
     email: u.email ?? '',
     role: ROLE_FROM_API[u.role] ?? 'resident',
     apartment: u.apartmentNumber ?? '',
+    association: u.association ?? null,
 });
 
 const toErrand = (t) => ({
@@ -53,7 +54,9 @@ const toSpot = (s) => ({
     mine: s.mine,
 });
 
-const EMPTY = { users: [], errands: [], announcements: [], notifications: [], parkingSpots: [] };
+const toWarning = (w) => ({ id: w.id, reason: w.reason, issuedBy: w.issuedBy, createdAt: w.createdAt });
+
+const EMPTY = { users: [], errands: [], announcements: [], notifications: [], parkingSpots: [], associations: [], warnings: [] };
 
 function loadToken(){
     try {
@@ -93,12 +96,14 @@ export function AppProvider({ children }){
         if (!me) return;
         const staff = me.role !== 'resident';
         try {
-            const [messages, tickets, notes, spots, users] = await Promise.all([
+            const [messages, tickets, notes, spots, users, warnings, associations] = await Promise.all([
                 api('/messages'),
                 api('/tickets'),
                 api('/notifications'),
                 api('/parking-spots'),
                 me.role === 'admin' ? api('/admin/residents') : staff ? api('/residents') : Promise.resolve([]),
+                api('/me/warnings'),
+                me.role === 'admin' ? api('/admin/associations') : Promise.resolve([]),
             ]);
             if (userRef.current !== me) return;
 
@@ -118,6 +123,8 @@ export function AppProvider({ children }){
                 })),
                 notifications,
                 parkingSpots: spots.map(toSpot),
+                warnings: warnings.map(toWarning),
+                associations,
             });
         } catch {
             // Tillfälligt nätverksfel eller utloggning (hanteras av 401-hanteraren): behåll senaste data.
@@ -199,17 +206,39 @@ export function AppProvider({ children }){
         toast.info('Du har loggats ut.');
     }
 
-    function addUser({ name, email, password, role, apartment }){
+    function addUser({ name, email, password, role, apartment, associationId }){
         return run(() => api('/admin/residents', {
             method: 'POST',
-            body: { name: name.trim(), email: email.trim(), password, role: ROLE_TO_API[role], apartmentNumber: apartment.trim() },
+            body: { name: name.trim(), email: email.trim(), password, role: ROLE_TO_API[role], apartmentNumber: apartment.trim(), associationId: associationId || undefined },
         }), `${name.trim()} har lagts till.`);
     }
 
     function removeUser(id){
         const target = data.users.find(u => u.id === id);
-        return run(() => api(`/admin/residents/${id}`, { method: 'DELETE' }),
+        const path = user.role === 'admin' ? `/admin/residents/${id}` : `/residents/${id}`;
+        return run(() => api(path, { method: 'DELETE' }),
             target ? `${target.name} har tagits bort.` : null);
+    }
+
+    function addAssociation(name){
+        return run(() => api('/admin/associations', { method: 'POST', body: { name: name.trim() } }),
+            `Föreningen ${name.trim()} har skapats.`);
+    }
+
+    function warnUser(id, reason){
+        const target = data.users.find(u => u.id === id);
+        return run(() => api(`/residents/${id}/warnings`, { method: 'POST', body: { reason: reason.trim() } }),
+            target ? `${target.name} har fått en varning.` : 'Varningen är skickad.');
+    }
+
+    // Historik hämtas vid behov och sparas inte i datalagret.
+    async function fetchWarnings(id){
+        try {
+            return (await api(`/residents/${id}/warnings`)).map(toWarning);
+        } catch (e) {
+            toast.error(e.message);
+            return [];
+        }
     }
 
     async function deleteAccount(){
@@ -298,12 +327,17 @@ export function AppProvider({ children }){
         errands: data.errands,
         announcements: data.announcements,
         parkingSpots: data.parkingSpots,
+        associations: data.associations,
+        warnings: data.warnings,
         notifications: data.notifications,
         unreadCount,
         login,
         logout,
         addUser,
         removeUser,
+        addAssociation,
+        warnUser,
+        fetchWarnings,
         deleteAccount,
         addErrand,
         setErrandStatus,

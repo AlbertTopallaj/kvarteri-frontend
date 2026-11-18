@@ -16,6 +16,7 @@ export default function StaffLayout({ children }){
             <div className="staff-brand">
                 <strong>Kvarteri</strong>
                 <span className="staff-role">{ROLE_LABELS[user.role]}</span>
+                {user.association && <span className="staff-role">{user.association.name}</span>}
             </div>
             <div className="staff-actions">
                 <span className="staff-user">{user.name}</span>

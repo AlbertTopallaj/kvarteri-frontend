@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Send } from 'lucide-react';
 import StaffLayout from '../../components/StaffLayout/StaffLayout';
+import ModerationList from '../../components/Moderation/ModerationList';
 import { useApp } from '../../context/AppContext';
 import { STATUS_LABELS, formatDate, formatDateTime } from '../../utils/roles';
 import '../../styles/ResidentPages.css'
@@ -263,6 +264,21 @@ function ParkingAdmin(){
     </>
 }
 
+function Residents(){
+    const { users, user } = useApp();
+    const others = users.filter(u => u.id !== user.id);
+
+    return <>
+    <section className="panel">
+        <h2>Boende i föreningen ({others.length})</h2>
+        <p className="row-meta" style={{ marginBottom: 16 }}>
+            Du kan varna eller ta bort boende i din förening.
+        </p>
+        <ModerationList users={others}/>
+    </section>
+    </>
+}
+
 export default function BoardView(){
     const { errands } = useApp();
     const [tab, setTab] = useState('errands');
@@ -272,7 +288,7 @@ export default function BoardView(){
     <StaffLayout>
         <header className="page-header">
             <h1>Styrelsen</h1>
-            <p>Granska ärenden, skriv meddelanden och hantera parkeringar och garage.</p>
+            <p>Granska ärenden, skriv meddelanden, hantera boende, parkeringar och garage.</p>
         </header>
 
         <div className="chip-row">
@@ -282,12 +298,15 @@ export default function BoardView(){
             <button type="button" className={`chip ${tab === 'messages' ? 'selected' : ''}`} onClick={() => setTab('messages')}>
                 Meddelanden
             </button>
+            <button type="button" className={`chip ${tab === 'residents' ? 'selected' : ''}`} onClick={() => setTab('residents')}>
+                Boende
+            </button>
             <button type="button" className={`chip ${tab === 'parking' ? 'selected' : ''}`} onClick={() => setTab('parking')}>
                 Parkering
             </button>
         </div>
 
-        {tab === 'errands' ? <ErrandReview/> : tab === 'messages' ? <Announcements/> : <ParkingAdmin/>}
+        {tab === 'errands' ? <ErrandReview/> : tab === 'messages' ? <Announcements/> : tab === 'residents' ? <Residents/> : <ParkingAdmin/>}
     </StaffLayout>
     </>
 }

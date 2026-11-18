@@ -45,6 +45,9 @@ const MESSAGES = {
     'Resident not found': 'Användaren hittades inte.',
     'Resource was just changed, try again': 'Någon hann före – försök igen.',
     'Request conflicts with existing data': 'Det finns redan en post med de uppgifterna.',
+    'Association already exists': 'Föreningen finns redan.',
+    'Association not found': 'Föreningen hittades inte.',
+    'You cannot moderate your own account': 'Du kan inte moderera ditt eget konto.',
     'Validation failed': 'Kontrollera de ifyllda uppgifterna.',
 };
 

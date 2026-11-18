@@ -7,7 +7,7 @@ export default function ResidentGreeting(){
     return <>
     <header className="greeting-container">
         <h1 className="greeting">Välkommen, {user.name}</h1>
-        <p className="greeting-sub">Här är en översikt över ditt boende.</p>
+        <p className="greeting-sub">Här är en översikt över ditt boende{user.association ? ` i ${user.association.name}` : ''}.</p>
     </header>
     </>
 }

@@ -1,30 +1,53 @@
 import { useState } from 'react';
-import { Trash2, UserPlus } from 'lucide-react';
+import { Building2, UserPlus } from 'lucide-react';
 import StaffLayout from '../../components/StaffLayout/StaffLayout';
+import ModerationList from '../../components/Moderation/ModerationList';
 import { useApp } from '../../context/AppContext';
-import { ROLE_LABELS } from '../../utils/roles';
 import '../../styles/ResidentPages.css'
 
-const EMPTY_FORM = { name: '', email: '', password: '', role: 'resident', apartment: '' };
+const EMPTY_FORM = { name: '', email: '', password: '', role: 'resident', apartment: '', associationId: '' };
 
 export default function AdminView(){
-    const { user, users, addUser, removeUser } = useApp();
+    const { user, users, associations, addUser, addAssociation } = useApp();
     const [form, setForm] = useState(EMPTY_FORM);
-    const [pendingDelete, setPendingDelete] = useState(null);
+    const [assocName, setAssocName] = useState('');
+    const [filter, setFilter] = useState('all');
 
     const set = (key) => (e) => setForm(prev => ({ ...prev, [key]: e.target.value }));
+    const visible = filter === 'all' ? users : users.filter(u => u.association?.id === filter);
 
     async function submit(e){
         e.preventDefault();
-        if (await addUser(form)) setForm(EMPTY_FORM);
+        if (await addUser(form)) setForm({ ...EMPTY_FORM, associationId: form.associationId });
+    }
+
+    async function submitAssociation(e){
+        e.preventDefault();
+        if (await addAssociation(assocName)) setAssocName('');
     }
 
     return <>
     <StaffLayout>
         <header className="page-header">
             <h1>Administration</h1>
-            <p>Lägg till och hantera användare.</p>
+            <p>Hantera föreningar och användare.</p>
         </header>
+
+        <section className="panel">
+            <h2>Föreningar ({associations.length})</h2>
+            <form className="form-grid" onSubmit={submitAssociation}>
+                <div className="field">
+                    <label htmlFor="assoc-name">Ny förening</label>
+                    <input id="assoc-name" value={assocName} onChange={e => setAssocName(e.target.value)} placeholder="T.ex. Brf Solgläntan" maxLength={100} required/>
+                </div>
+                <div className="field" style={{ justifyContent: 'flex-end' }}>
+                    <button type="submit" className="btn">
+                        <Building2 size={16}/>
+                        Skapa förening
+                    </button>
+                </div>
+            </form>
+        </section>
 
         <section className="panel">
             <h2>Ny användare</h2>
@@ -51,6 +74,15 @@ export default function AdminView(){
                         </select>
                     </div>
                     <div className="field">
+                        <label htmlFor="association">Förening</label>
+                        <select id="association" value={form.associationId} onChange={set('associationId')}>
+                            <option value="">Min förening{user.association ? ` (${user.association.name})` : ''}</option>
+                            {associations.filter(a => a.id !== user.association?.id).map(a => (
+                                <option key={a.id} value={a.id}>{a.name}</option>
+                            ))}
+                        </select>
+                    </div>
+                    <div className="field">
                         <label htmlFor="apartment">Lägenhet (valfritt)</label>
                         <input id="apartment" value={form.apartment} onChange={set('apartment')} placeholder="t.ex. 1203"/>
                     </div>
@@ -65,41 +97,18 @@ export default function AdminView(){
         </section>
 
         <section className="panel">
-            <h2>Användare ({users.length})</h2>
-            <ul className="row-list">
-                {users.map(u => (
-                    <li key={u.id}>
-                        <div>
-                            <div className="row-title">{u.name}</div>
-                            <div className="row-meta">
-                                {u.email}{u.apartment && ` · Lgh ${u.apartment}`}
-                            </div>
-                        </div>
-                        <div className="row-actions">
-                            <span className={`badge role-${u.role}`}>{ROLE_LABELS[u.role]}</span>
-                            {u.id !== user.id && (
-                                pendingDelete === u.id
-                                    ? <>
-                                        <button type="button" className="btn sm danger" onClick={() => { removeUser(u.id); setPendingDelete(null); }}>
-                                            Bekräfta
-                                        </button>
-                                        <button type="button" className="btn sm secondary" onClick={() => setPendingDelete(null)}>
-                                            Avbryt
-                                        </button>
-                                    </>
-                                    : <button
-                                        type="button"
-                                        className="btn sm secondary icon-only"
-                                        aria-label={`Ta bort ${u.name}`}
-                                        onClick={() => setPendingDelete(u.id)}
-                                    >
-                                        <Trash2 size={14}/>
-                                    </button>
-                            )}
-                        </div>
-                    </li>
+            <h2>Användare ({visible.length})</h2>
+            <div className="chip-row" style={{ marginBottom: 20 }}>
+                <button type="button" className={`chip ${filter === 'all' ? 'selected' : ''}`} onClick={() => setFilter('all')}>
+                    Alla föreningar
+                </button>
+                {associations.map(a => (
+                    <button key={a.id} type="button" className={`chip ${filter === a.id ? 'selected' : ''}`} onClick={() => setFilter(a.id)}>
+                        {a.name}
+                    </button>
                 ))}
-            </ul>
+            </div>
+            <ModerationList users={visible} showAssociation/>
         </section>
     </StaffLayout>
     </>

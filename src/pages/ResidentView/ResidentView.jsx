@@ -5,7 +5,7 @@ import { formatDateTime } from "../../utils/roles";
 import '../../styles/ResidentPages.css'
 
 export default function ResidentView(){
-    const { user, errands, announcements, unreadCount } = useApp();
+    const { user, errands, announcements, warnings, unreadCount } = useApp();
     const myErrands = errands.filter(e => e.userId === user.id);
     const openErrands = myErrands.filter(e => e.status === 'pending' || e.status === 'progress').length;
 
@@ -15,6 +15,20 @@ export default function ResidentView(){
         <ViewCard label="Mina ärenden" value={openErrands}/>
         <ViewCard label="Olästa notiser" value={unreadCount}/>
     </section>
+
+    {warnings.length > 0 && (
+        <section className="panel">
+            <h2>Varningar ({warnings.length})</h2>
+            <ul className="announcement-list">
+                {warnings.map(w => (
+                    <li key={w.id}>
+                        <div className="row-meta">{w.issuedBy} · {formatDateTime(w.createdAt)}</div>
+                        <p className="review-description">{w.reason}</p>
+                    </li>
+                ))}
+            </ul>
+        </section>
+    )}
 
     <section className="panel">
         <h2>Meddelanden från styrelsen</h2>
