@@ -17,6 +17,11 @@
     border-radius: 12px;
 }
 
+.login-logo {
+    align-self: center;
+    margin-bottom: 4px;
+}
+
 .login-form h3 {
     margin: 0 0 4px;
     font-size: 20px;
@@ -32,6 +37,7 @@
 .login-form label {
     font-size: 13px;
     font-weight: 500;
+    letter-spacing: 0.5px;
     color: var(--muted);
     margin-bottom: 6px;
     display: block;

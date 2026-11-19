@@ -2,6 +2,7 @@ import { Link } from 'react-router';
 import { LogOut, Settings } from 'lucide-react';
 import NotificationBell from '../NotificationBell/NotificationBell';
 import ThemeToggle from '../ThemeToggle/ThemeToggle';
+import Logo from '../Logo/Logo';
 import { useApp } from '../../context/AppContext';
 import { ROLE_LABELS } from '../../utils/roles';
 import './StaffLayout.css'
@@ -14,7 +15,7 @@ export default function StaffLayout({ children }){
     <div className="staff-shell">
         <header className="staff-header">
             <div className="staff-brand">
-                <strong>Kvarteri</strong>
+                <Logo size={22}/>
                 <span className="staff-role">{ROLE_LABELS[user.role]}</span>
                 {user.association && <span className="staff-role">{user.association.name}</span>}
             </div>

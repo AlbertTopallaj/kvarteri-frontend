@@ -1,0 +1,18 @@
+.kv-logo {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.kv-mark {
+    color: var(--accent);
+    flex: none;
+}
+
+.kv-wordmark {
+    font-size: 20px;
+    font-weight: 600;
+    letter-spacing: -0.02em;
+    color: var(--text);
+    line-height: 1;
+}

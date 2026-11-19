@@ -1,5 +1,6 @@
 import { Link, NavLink } from 'react-router';
 import { useApp } from '../../context/AppContext';
+import Logo from '../Logo/Logo';
 import './Sidebar.css'
 import { CalendarDays, Car, FileExclamationPoint, HouseHeart, LogOut, MessagesCircle, Settings, SquareText } from 'lucide-react'
 
@@ -16,6 +17,9 @@ export default function Sidebar(){
     const { logout } = useApp();
     return <>
     <aside className="sidebar">
+        <Link to="/resident" className="sidebar-logo" title="Kvarteri" aria-label="Kvarteri">
+            <Logo size={32} withWordmark={false}/>
+        </Link>
         <span className='span-sidebar'>MENY</span>
         <nav className='sidebar-nav'>
             {navItems.map(({ to, label, icon: Icon, end }) => (

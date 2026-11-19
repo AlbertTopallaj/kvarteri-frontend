@@ -3,6 +3,7 @@ import { Navigate, useNavigate } from 'react-router';
 import { useApp } from '../../../context/AppContext';
 import { useToast } from '../../Toast/ToastProvider';
 import ThemeToggle from '../../ThemeToggle/ThemeToggle';
+import Logo from '../../Logo/Logo';
 import { ROLE_HOME } from '../../../utils/roles';
 import './LoginForm.css'
 
@@ -35,6 +36,7 @@ export default function LoginForm(){
     <div className='login-wrapper'>
     <div className='login-theme'><ThemeToggle/></div>
     <form className='login-form' onSubmit={redirectToView}>
+        <Logo size={40} className="login-logo"/>
         <h3>Logga in</h3>
         <label htmlFor="email">E-post</label>
         <input value={email} id="email" type="email" autoComplete="username" placeholder="Ange e-postadress" onChange={(e) => setEmail(e.target.value)}></input>
