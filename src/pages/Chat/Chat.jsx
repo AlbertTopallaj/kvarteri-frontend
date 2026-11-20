@@ -1,50 +1,45 @@
 import { useState } from 'react';
-import { SendHorizontal } from 'lucide-react';
+import { useApp } from '../../context/AppContext';
+import { api } from '../../api/client';
+import { publishChat } from '../../api/chat';
+import ChatRoom from '../../components/Chat/ChatRoom';
 import '../../styles/ResidentPages.css'
 import './Chat.css'
 
-const now = () => new Date().toLocaleTimeString('sv-SE', { hour: '2-digit', minute: '2-digit' });
-
 export default function Chat(){
-    const [messages, setMessages] = useState([
-        { id: 1, from: 'them', text: 'Hej! Hur kan vi hjälpa dig?', time: '09:12' },
-    ]);
-    const [text, setText] = useState('');
-
-    function send(e){
-        e.preventDefault();
-        const trimmed = text.trim();
-        if (!trimmed) return;
-        setMessages(prev => [...prev, { id: Date.now(), from: 'me', text: trimmed, time: now() }]);
-        setText('');
-    }
+    const { user } = useApp();
+    const [tab, setTab] = useState('group');
+    const assocId = user.association?.id;
 
     return <>
     <header className="page-header">
         <h1>Chatt</h1>
-        <p>Skriv till din fastighetsförvaltare.</p>
+        <p>Prata med grannar i föreningen eller skriv privat till styrelsen.</p>
     </header>
 
-    <section className="panel chat-panel">
-        <div className="chat-messages">
-            {messages.map(m => (
-                <div key={m.id} className={`chat-bubble ${m.from}`}>
-                    <span>{m.text}</span>
-                    <time>{m.time}</time>
-                </div>
-            ))}
-        </div>
-        <form className="chat-form" onSubmit={send}>
-            <input
-                value={text}
-                onChange={e => setText(e.target.value)}
-                placeholder="Skriv ett meddelande…"
-                aria-label="Meddelande"
-            />
-            <button type="submit" className="btn" aria-label="Skicka" disabled={!text.trim()}>
-                <SendHorizontal size={16}/>
-            </button>
-        </form>
-    </section>
+    <div className="chip-row" style={{ marginBottom: 16 }}>
+        <button type="button" className={`chip ${tab === 'group' ? 'selected' : ''}`} onClick={() => setTab('group')}>Föreningen</button>
+        <button type="button" className={`chip ${tab === 'board' ? 'selected' : ''}`} onClick={() => setTab('board')}>Styrelsen</button>
+    </div>
+
+    {tab === 'group' ? (
+        <ChatRoom
+            destination={`/topic/assoc.${assocId}.group`}
+            loadHistory={() => api('/chat/group')}
+            onSend={(content) => publishChat('/app/chat.group', { content })}
+            meId={user.id}
+            showSenders
+            emptyText="Inga meddelanden i föreningen än. Skriv något!"
+        />
+    ) : (
+        <ChatRoom
+            destination={`/topic/assoc.${assocId}.direct.${user.id}`}
+            loadHistory={() => api(`/chat/direct/${user.id}`)}
+            onSend={(content) => publishChat('/app/chat.direct', { content })}
+            meId={user.id}
+            placeholder="Skriv till styrelsen…"
+            emptyText="Skriv ett privat meddelande till styrelsen."
+        />
+    )}
     </>
 }

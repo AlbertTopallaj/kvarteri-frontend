@@ -1,6 +1,7 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
 import { useToast } from '../components/Toast/ToastProvider';
 import { api, basicToken, setToken, setUnauthorizedHandler } from '../api/client';
+import { disconnectChat } from '../api/chat';
 import { playPing } from '../utils/sound';
 
 /*
@@ -82,6 +83,7 @@ export function AppProvider({ children }){
     const knownNotes = useRef(null);
 
     const clearSession = useCallback(() => {
+        disconnectChat();
         setToken(null);
         saveToken(null);
         userRef.current = null;

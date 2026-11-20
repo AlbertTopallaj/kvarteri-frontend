@@ -14,6 +14,11 @@ export default defineConfig({
           proxy.on('proxyReq', (proxyReq) => proxyReq.removeHeader('origin'))
         },
       },
+      // WebSocket (STOMP chat). ws: true upgrades the connection to the backend.
+      '/ws': {
+        target: process.env.VITE_PROXY_TARGET ?? 'http://localhost:8080',
+        ws: true,
+      },
     },
   },
 })

@@ -1,5 +1,5 @@
 import { Link } from 'react-router';
-import { LogOut, Settings } from 'lucide-react';
+import { HouseHeart, LogOut, MessagesCircle, Settings } from 'lucide-react';
 import NotificationBell from '../NotificationBell/NotificationBell';
 import ThemeToggle from '../ThemeToggle/ThemeToggle';
 import Logo from '../Logo/Logo';
@@ -10,6 +10,7 @@ import './StaffLayout.css'
 // Gemensam ram för admin- och styrelsevyerna.
 export default function StaffLayout({ children }){
     const { user, logout } = useApp();
+    const base = user.role === 'admin' ? '/admin' : '/board';
 
     return <>
     <div className="staff-shell">
@@ -21,6 +22,12 @@ export default function StaffLayout({ children }){
             </div>
             <div className="staff-actions">
                 <span className="staff-user">{user.name}</span>
+                <Link to={base} className="staff-icon-btn" aria-label="Översikt" title="Översikt">
+                    <HouseHeart size={18}/>
+                </Link>
+                <Link to={`${base}/chatt`} className="staff-icon-btn" aria-label="Chatt" title="Chatt">
+                    <MessagesCircle size={18}/>
+                </Link>
                 <ThemeToggle/>
                 <NotificationBell/>
                 <Link to="/settings" className="staff-icon-btn" aria-label="Inställningar" title="Inställningar">

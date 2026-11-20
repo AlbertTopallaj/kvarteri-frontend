@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Navigate, useNavigate } from 'react-router';
+import { Link, Navigate, useNavigate } from 'react-router';
 import { useApp } from '../../../context/AppContext';
 import { useToast } from '../../Toast/ToastProvider';
 import ThemeToggle from '../../ThemeToggle/ThemeToggle';
@@ -43,7 +43,7 @@ export default function LoginForm(){
         <label htmlFor="password">Lösenord</label>
         <input value={password} id="password" type="password" autoComplete="current-password" placeholder="Ange lösenord" onChange={(e) => setPassword(e.target.value)}></input>
         <button className="login-button" disabled={busy}>{busy ? "Loggar in..." : "Logga in"}</button>
-        <p className='login-hint'>Glömt lösenordet? Kontakta din administratör</p>
+        <p className='login-hint'><Link to="/glomt-losenord">Glömt lösenordet?</Link></p>
     </form>
     </div>
     </>

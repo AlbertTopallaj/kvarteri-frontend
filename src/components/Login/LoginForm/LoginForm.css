@@ -79,6 +79,15 @@
     opacity: 0.85;
 }
 
+/* When the button style is applied to a link (e.g. "Begär ny länk"). */
+a.login-button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-decoration: none;
+    box-sizing: border-box;
+}
+
 .login-hint {
     text-align: center;
     font-size: 13px;

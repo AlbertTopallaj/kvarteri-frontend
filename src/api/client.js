@@ -25,6 +25,10 @@ export function setToken(value){
     token = value;
 }
 
+export function getToken(){
+    return token;
+}
+
 export function setUnauthorizedHandler(fn){
     onUnauthorized = fn;
 }
@@ -49,6 +53,7 @@ const MESSAGES = {
     'Association not found': 'Föreningen hittades inte.',
     'You cannot moderate your own account': 'Du kan inte moderera ditt eget konto.',
     'Validation failed': 'Kontrollera de ifyllda uppgifterna.',
+    'Invalid or expired token': 'Länken är ogiltig eller har gått ut. Begär en ny.',
 };
 
 function messageFor(status, detail){

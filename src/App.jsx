@@ -7,12 +7,15 @@ import ResidentLayout from './pages/ResidentView/ResidentLayout';
 import ResidentView from './pages/ResidentView/ResidentView';
 import './App.css'
 import Login from './pages/Login/Login';
+import ForgotPassword from './pages/Login/ForgotPassword';
+import ResetPassword from './pages/Login/ResetPassword';
 import Settings from './pages/Settings/Settings';
 import Errand from './pages/Errand/Errand';
 import Booking from './pages/Booking/Booking';
 import Parking from './pages/Parking/Parking';
 import Incident from './pages/Incident/Incident';
 import Chat from './pages/Chat/Chat';
+import StaffChat from './pages/Chat/StaffChat';
 import AdminView from './pages/Admin/AdminView';
 import BoardView from './pages/Board/BoardView';
 
@@ -27,6 +30,8 @@ function App() {
 
     <Routes>
       <Route path="/" element={<Login/>} />
+      <Route path="/glomt-losenord" element={<ForgotPassword/>} />
+      <Route path="/aterstall" element={<ResetPassword/>} />
 
       <Route element={<RequireRole roles={['resident']} />}>
         <Route path="/resident" element={<ResidentLayout/>}>
@@ -41,10 +46,12 @@ function App() {
 
       <Route element={<RequireRole roles={['board']} />}>
         <Route path="/board" element={<BoardView/>} />
+        <Route path="/board/chatt" element={<StaffChat/>} />
       </Route>
 
       <Route element={<RequireRole roles={['admin']} />}>
         <Route path="/admin" element={<AdminView/>} />
+        <Route path="/admin/chatt" element={<StaffChat/>} />
       </Route>
 
       <Route element={<RequireRole roles={['resident', 'board']} />}>
